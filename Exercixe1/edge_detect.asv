@@ -1,0 +1,12 @@
+function edge_detect(img)
+    imshow(edge(img,'Sobel',0.1))
+    snapnow;
+    imshow(edge(img,'Sobel',0.5))
+    imshow(edge(img,'Sobel',0.9))
+    imshow(edge(img,'Prewitt',0.1))
+    imshow(edge(img,'Prewitt',0.5))
+    imshow(edge(img,'Prewitt',0.9))
+    imshow(edge(img,'zerocross',0.1))
+    imshow(edge(img,'zerocross',0.5))
+    imshow(edge(img,'zerocross',0.9))
+end
