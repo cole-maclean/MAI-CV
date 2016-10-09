@@ -94,3 +94,34 @@ snapnow;
 % the parameters could be changed to optimize for each individual image.
 % This is obviously a tedious task, and a comprimise between accuracy
 % across an image corpus is likely needed.
+
+%% Lab 2-2 Video Clip Edge Enhancing
+vidIn = VideoReader('lab2/images_video/Maldives.mp4');
+vidOut = VideoWriter('lab2/images_video/enhanced_video');
+open(vidOut)
+for ii = 1:vidIn.NumberOfFrames;
+  frm = read(vidIn, ii);
+  edges = edge(rgb2gray(frm),'Prewitt',0.1);
+  enhanced_frm = overlap_edge(frm,edges,2);
+  writeVideo( vidOut, enhanced_frm);
+  if mod(ii,2500) == 0
+      imshow(enhanced_frm)
+      snapnow;
+  end
+end
+close(vidOut)
+%% Lab 2-2 Take 2 - Canny Edge Detector
+vidIn = VideoReader('lab2/images_video/Maldives.mp4');
+vidOut = VideoWriter('lab2/images_video/canny_enhanced_video');
+open(vidOut)
+for ii = 1:vidIn.NumberOfFrames;
+  frm = read(vidIn, ii);
+  edges = edge(rgb2gray(frm),'Canny');
+  enhanced_frm = overlap_edge(frm,edges,2);
+  writeVideo( vidOut, enhanced_frm);
+  if mod(ii,2500) == 0
+      imshow(enhanced_frm)
+      snapnow;
+  end
+end
+close(vidOut)

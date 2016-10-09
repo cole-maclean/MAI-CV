@@ -70,7 +70,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 Cole MacLean and Suren Oganesian
 </br>
 October 10, 2016
-</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Lab 1-1 Image Swap</a></li><li><a href="#2">Lab 1-4 Image Split</a></li><li><a href="#3">Lab 1-6 Image Fusing</a></li><li><a href="#4">Lab 2-1 Image Edge Detection</a></li><li><a href="#5">2-1 Discussion</a></li></ul></div><h2 id="1">Lab 1-1 Image Swap</h2><pre class="codeinput"><span class="comment">%create black and white squares to use in producing box patterns</span>
+</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Lab 1-1 Image Swap</a></li><li><a href="#2">Lab 1-4 Image Split</a></li><li><a href="#3">Lab 1-6 Image Fusing</a></li><li><a href="#4">Lab 2-1 Image Edge Detection</a></li><li><a href="#5">2-1 Discussion</a></li><li><a href="#6">Lab2-2 Video Clip Edge Enhancing</a></li><li><a href="#7">%% Lab2-2 Take 2 - Canny Edge Detector</a></li></ul></div><h2 id="1">Lab 1-1 Image Swap</h2><pre class="codeinput"><span class="comment">%create black and white squares to use in producing box patterns</span>
 blackbox = zeros(500,500);
 whitebox = ones(500,500);
 
@@ -125,7 +125,35 @@ imshow(edge(dog,<span class="string">'Prewitt'</span>,0.1))
 snapnow;
 imshow(edge(fabulous,<span class="string">'Prewitt'</span>,0.1))
 snapnow;
-</pre><img vspace="5" hspace="5" src="exercise1_04.png" style="width:236px;height:177px;" alt=""> <img vspace="5" hspace="5" src="exercise1_05.png" style="width:236px;height:177px;" alt=""> <img vspace="5" hspace="5" src="exercise1_06.png" style="width:236px;height:177px;" alt=""> <img vspace="5" hspace="5" src="exercise1_07.png" style="width:236px;height:177px;" alt=""> <img vspace="5" hspace="5" src="exercise1_08.png" style="width:236px;height:177px;" alt=""> <img vspace="5" hspace="5" src="exercise1_09.png" style="width:236px;height:177px;" alt=""> <img vspace="5" hspace="5" src="exercise1_10.png" style="width:236px;height:177px;" alt=""> <img vspace="5" hspace="5" src="exercise1_11.png" style="width:236px;height:177px;" alt=""> <img vspace="5" hspace="5" src="exercise1_12.png" style="width:236px;height:177px;" alt=""> <img vspace="5" hspace="5" src="exercise1_13.png" style="width:236px;height:177px;" alt=""> <img vspace="5" hspace="5" src="exercise1_14.png" style="width:547px;height:353px;" alt=""> <img vspace="5" hspace="5" src="exercise1_15.png" style="width:318px;height:214px;" alt=""> <img vspace="5" hspace="5" src="exercise1_16.png" style="width:318px;height:214px;" alt=""> <h2 id="5">2-1 Discussion</h2><p>The above images display various edge detection algorithms and different parameters for each algorithm to test which algorithm and parameters work best for detecting the edges of the starbucks logo. 2 detectors stand out as being very good at detecting the edges. These are the Sobel and Prewitt edge detectors, with thresholds both set to 0.1. The Prewitt detector just edges out (Ha!) the Sobel detector, with the detected edges being slightly crisper and more complete then the Sobel, making it the optimized detector. Sobel and Prewitt detectors with higher thresholds performed poorly in detecting edges, and the zerocross edge detector was completely unable to detect edges at any threshold level. This optimal edge detector was then used on 3 other images, to varying degrees of success. It was able to capture the very detailed edges of the fabulous image, but performed poorly in accuractely outlining both the dolphin and dog images.</p><div><ol><li>We used 3 detector algorithms for edge detection - Sobel, Prewitt and zerocross</li><li>For the starbucks image, the best edge detector was Prewitt thresholded at 0.1</li><li>Optimal parameter was threshold at 0.1</li><li>Advantages of this edge detector on other images is that it is very good at obtaining the detailed edges in intricate images like fabulous, but a disadvantage is that it can cause noise as seen in the dolphin image where the water bubbles are captured as edges</li><li>To correct for the noisey edge detection that this detector creates, the parameters could be changed to optimize for each individual image. This is obviously a tedious task, and a comprimise between accuracy across an image corpus is likely needed.</li></ol></div><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2016b</a><br></p></div><!--
+</pre><img vspace="5" hspace="5" src="exercise1_04.png" style="width:236px;height:177px;" alt=""> <img vspace="5" hspace="5" src="exercise1_05.png" style="width:236px;height:177px;" alt=""> <img vspace="5" hspace="5" src="exercise1_06.png" style="width:236px;height:177px;" alt=""> <img vspace="5" hspace="5" src="exercise1_07.png" style="width:236px;height:177px;" alt=""> <img vspace="5" hspace="5" src="exercise1_08.png" style="width:236px;height:177px;" alt=""> <img vspace="5" hspace="5" src="exercise1_09.png" style="width:236px;height:177px;" alt=""> <img vspace="5" hspace="5" src="exercise1_10.png" style="width:236px;height:177px;" alt=""> <img vspace="5" hspace="5" src="exercise1_11.png" style="width:236px;height:177px;" alt=""> <img vspace="5" hspace="5" src="exercise1_12.png" style="width:236px;height:177px;" alt=""> <img vspace="5" hspace="5" src="exercise1_13.png" style="width:236px;height:177px;" alt=""> <img vspace="5" hspace="5" src="exercise1_14.png" style="width:547px;height:353px;" alt=""> <img vspace="5" hspace="5" src="exercise1_15.png" style="width:318px;height:214px;" alt=""> <img vspace="5" hspace="5" src="exercise1_16.png" style="width:318px;height:214px;" alt=""> <h2 id="5">2-1 Discussion</h2><p>The above images display various edge detection algorithms and different parameters for each algorithm to test which algorithm and parameters work best for detecting the edges of the starbucks logo. 2 detectors stand out as being very good at detecting the edges. These are the Sobel and Prewitt edge detectors, with thresholds both set to 0.1. The Prewitt detector just edges out (Ha!) the Sobel detector, with the detected edges being slightly crisper and more complete then the Sobel, making it the optimized detector. Sobel and Prewitt detectors with higher thresholds performed poorly in detecting edges, and the zerocross edge detector was completely unable to detect edges at any threshold level. This optimal edge detector was then used on 3 other images, to varying degrees of success. It was able to capture the very detailed edges of the fabulous image, but performed poorly in accuractely outlining both the dolphin and dog images.</p><div><ol><li>We used 3 detector algorithms for edge detection - Sobel, Prewitt and zerocross</li><li>For the starbucks image, the best edge detector was Prewitt thresholded at 0.1</li><li>Optimal parameter was threshold at 0.1</li><li>Advantages of this edge detector on other images is that it is very good at obtaining the detailed edges in intricate images like fabulous, but a disadvantage is that it can cause noise as seen in the dolphin image where the water bubbles are captured as edges</li><li>To correct for the noisey edge detection that this detector creates, the parameters could be changed to optimize for each individual image. This is obviously a tedious task, and a comprimise between accuracy across an image corpus is likely needed.</li></ol></div><h2 id="6">Lab2-2 Video Clip Edge Enhancing</h2><pre class="codeinput">vidIn = VideoReader(<span class="string">'lab2/images_video/Maldives.mp4'</span>);
+vidOut = VideoWriter(<span class="string">'lab2/images_video/enhanced_video'</span>);
+open(vidOut)
+<span class="keyword">for</span> ii = 1:vidIn.NumberOfFrames;
+  frm = read(vidIn, ii);
+  edges = edge(rgb2gray(frm),<span class="string">'Prewitt'</span>,0.1);
+  enhanced_frm = overlap_edge(frm,edges,2);
+  writeVideo( vidOut, enhanced_frm);
+  <span class="keyword">if</span> mod(ii,5000) == 0
+      imshow(enhanced_frm)
+      snapnow;
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+close(vidOut)
+</pre><img vspace="5" hspace="5" src="exercise1_17.png" style="width:403px;height:230px;" alt=""> <img vspace="5" hspace="5" src="exercise1_18.png" style="width:403px;height:230px;" alt=""> <img vspace="5" hspace="5" src="exercise1_19.png" style="width:403px;height:230px;" alt=""> <img vspace="5" hspace="5" src="exercise1_20.png" style="width:403px;height:230px;" alt=""> <img vspace="5" hspace="5" src="exercise1_21.png" style="width:403px;height:230px;" alt=""> <img vspace="5" hspace="5" src="exercise1_22.png" style="width:403px;height:230px;" alt=""> <h2 id="7">%% Lab2-2 Take 2 - Canny Edge Detector</h2><pre class="codeinput">vidIn = VideoReader(<span class="string">'lab2/images_video/Maldives.mp4'</span>);
+vidOut = VideoWriter(<span class="string">'lab2/images_video/canny_enhanced_video'</span>);
+open(vidOut)
+<span class="keyword">for</span> ii = 1:vidIn.NumberOfFrames;
+  frm = read(vidIn, ii);
+  edges = edge(rgb2gray(frm),<span class="string">'Canny'</span>);
+  enhanced_frm = overlap_edge(frm,edges,2);
+  writeVideo( vidOut, enhanced_frm);
+  <span class="keyword">if</span> mod(ii,5000) == 0
+      imshow(enhanced_frm)
+      snapnow;
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+close(vidOut)
+</pre><img vspace="5" hspace="5" src="exercise1_23.png" style="width:403px;height:230px;" alt=""> <img vspace="5" hspace="5" src="exercise1_24.png" style="width:403px;height:230px;" alt=""> <img vspace="5" hspace="5" src="exercise1_25.png" style="width:403px;height:230px;" alt=""> <img vspace="5" hspace="5" src="exercise1_26.png" style="width:403px;height:230px;" alt=""> <img vspace="5" hspace="5" src="exercise1_27.png" style="width:403px;height:230px;" alt=""> <img vspace="5" hspace="5" src="exercise1_28.png" style="width:403px;height:230px;" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2016b</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% CV Exercise 1 - Introduction to Matlab and Edge Detection
 %
@@ -223,5 +251,36 @@ snapnow;
 % the parameters could be changed to optimize for each individual image.
 % This is obviously a tedious task, and a comprimise between accuracy
 % across an image corpus is likely needed.
+
+%% Lab2-2 Video Clip Edge Enhancing
+vidIn = VideoReader('lab2/images_video/Maldives.mp4');
+vidOut = VideoWriter('lab2/images_video/enhanced_video');
+open(vidOut)
+for ii = 1:vidIn.NumberOfFrames;
+  frm = read(vidIn, ii);
+  edges = edge(rgb2gray(frm),'Prewitt',0.1);
+  enhanced_frm = overlap_edge(frm,edges,2);
+  writeVideo( vidOut, enhanced_frm);
+  if mod(ii,5000) == 0
+      imshow(enhanced_frm)
+      snapnow;
+  end
+end
+close(vidOut)
+%% %% Lab2-2 Take 2 - Canny Edge Detector
+vidIn = VideoReader('lab2/images_video/Maldives.mp4');
+vidOut = VideoWriter('lab2/images_video/canny_enhanced_video');
+open(vidOut)
+for ii = 1:vidIn.NumberOfFrames;
+  frm = read(vidIn, ii);
+  edges = edge(rgb2gray(frm),'Canny');
+  enhanced_frm = overlap_edge(frm,edges,2);
+  writeVideo( vidOut, enhanced_frm);
+  if mod(ii,5000) == 0
+      imshow(enhanced_frm)
+      snapnow;
+  end
+end
+close(vidOut)
 ##### SOURCE END #####
 --></body></html>
