@@ -22,29 +22,15 @@ addpath(genpath('classification'))
 
 %% Load database of images and analyze the structure
 ARFace = importdata('ARFace.mat');
-
 %% Prepare the data set samples identifying data and labels (male/female).
 % We will use the internal faces loaded in the structure
 display(ARFace)
-
-
 %% Count the number of samples and samples males and females of the data set.
 % This information is in ARFace.gender ==> male == 1, female == 0
 % 1. To complete:
-% NumberMales = ...
-% NumberSamples = ...
-% NumberFemales = ...
-
-%% Visualize some of the internal faces and save in bmp images
-% Use the function reshape to transform the information from a vector to a
-% matrix.
-% 2. To complete:
-for i=1:10:NumberSamples
-   
-    % >> code here <<
-   
-end
-
+NumberSamples = length(ARFace.gender)
+NumberMales = length(ARFace.gender(ARFace.gender == 1))
+NumberFemales = length(ARFace.gender(ARFace.gender == 0))
 
 %% Define the training set and test set from the data set using:
 % a. Use the whole data set (an unbalanced problem)
@@ -55,23 +41,20 @@ end
 % Use the "internal" images, we will reduce dimensionality later.
 
 % 3. To complete:
-% images = ...
-% labels = ...
-% subjects = ...
+ images = ARFace.internal;
+ labels = ARFace.gender;
+ subjects = ARFace.person;
     
 %% Atention! We will use the dataset in the representation: Sample x Variables (Samples x 1188):
 images = images';
 labels = labels';
 subjects = subjects';
 
-
 %% Feature Extraction using PCA
 mat_features_pca = feature_extraction('PCA', images);
 
-
 %% Feature Extraction using PCA (95% variance explained)
 mat_features_pca95 = feature_extraction('PCA95', images);
-
 
 %% Feature Extraction using LDA
 mat_features_lda = feature_extraction('LDA', images, labels);

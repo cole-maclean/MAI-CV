@@ -1,0 +1,327 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>main_gender_recognition</title><meta name="generator" content="MATLAB 9.1"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-11-10"><meta name="DC.source" content="main_gender_recognition.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#3">These sub-directories are required</a></li><li><a href="#4">Load database of images and analyze the structure</a></li><li><a href="#5">Prepare the data set samples identifying data and labels (male/female).</a></li><li><a href="#6">Count the number of samples and samples males and females of the data set.</a></li><li><a href="#7">Define the training set and test set from the data set using:</a></li><li><a href="#8">Atention! We will use the dataset in the representation: Sample x Variables (Samples x 1188):</a></li><li><a href="#9">Feature Extraction using PCA</a></li><li><a href="#10">Feature Extraction using PCA (95% variance explained)</a></li><li><a href="#11">Feature Extraction using LDA</a></li><li><a href="#12">Classification</a></li></ul></div><pre class="codeinput"><span class="comment">% Computational Vision</span>
+<span class="comment">% Practicum Face Recognition: Gender recognition</span>
+<span class="comment">%</span>
+<span class="comment">% Student name: ...</span>
+<span class="comment">%</span>
+<span class="comment">% &gt;&gt; OBJECTIVE:</span>
+<span class="comment">% 1) Analize the code</span>
+<span class="comment">% 2) Understand the function of each part of the code</span>
+<span class="comment">% 3) Code the missing parts</span>
+<span class="comment">% 4) Answer the pose questions</span>
+<span class="comment">% 5) Execute the code</span>
+<span class="comment">% 6) Check the results and comment them in the report</span>
+
+<span class="comment">% main function</span>
+<span class="keyword">function</span> main_gender_recognition()
+</pre><pre class="codeinput">clc; close <span class="string">all</span>; clear;
+</pre><h2 id="3">These sub-directories are required</h2><pre class="codeinput">addpath(genpath(<span class="string">'feature_extraction'</span>))
+addpath(genpath(<span class="string">'classification'</span>))
+</pre><h2 id="4">Load database of images and analyze the structure</h2><pre class="codeinput">ARFace = importdata(<span class="string">'ARFace.mat'</span>);
+</pre><h2 id="5">Prepare the data set samples identifying data and labels (male/female).</h2><p>We will use the internal faces loaded in the structure</p><pre class="codeinput">display(ARFace)
+</pre><pre class="codeoutput">
+ARFace = 
+
+  struct with fields:
+
+              person: [1&times;2210 double]
+             session: [1&times;2210 double]
+              gender: [1&times;2210 double]
+                  im: [1&times;2210 double]
+                imSz: [78 90]
+               ext03: [600&times;2210 double]
+               ext07: [600&times;2210 double]
+            internal: [1188&times;2210 double]
+          internalSz: [36 33]
+      small_internal: [288&times;2210 double]
+    small_internalSz: [18 16]
+
+</pre><h2 id="6">Count the number of samples and samples males and females of the data set.</h2><p>This information is in ARFace.gender ==&gt; male == 1, female == 0 1. To complete:</p><pre class="codeinput">NumberSamples = length(ARFace.gender)
+NumberMales = length(ARFace.gender(ARFace.gender == 1))
+NumberFemales = length(ARFace.gender(ARFace.gender == 0))
+</pre><pre class="codeoutput">
+NumberSamples =
+
+        2210
+
+
+NumberMales =
+
+   988
+
+
+NumberFemales =
+
+        1222
+
+</pre><h2 id="7">Define the training set and test set from the data set using:</h2><p>a. Use the whole data set (an unbalanced problem) Build this data structure:   images(:,i) is the image of sample i.   labels(i) is the label of sample i.   subjects(i) is the number of the subject of sample i. Use the "internal" images, we will reduce dimensionality later.</p><pre class="codeinput"><span class="comment">% 3. To complete:</span>
+ images = ARFace.internal;
+ labels = ARFace.gender;
+ subjects = ARFace.person;
+</pre><h2 id="8">Atention! We will use the dataset in the representation: Sample x Variables (Samples x 1188):</h2><pre class="codeinput">images = images';
+labels = labels';
+subjects = subjects';
+</pre><h2 id="9">Feature Extraction using PCA</h2><pre class="codeinput">mat_features_pca = feature_extraction(<span class="string">'PCA'</span>, images);
+</pre><img vspace="5" hspace="5" src="main_gender_recognition_01.png" style="width:226px;height:158px;" alt=""> <h2 id="10">Feature Extraction using PCA (95% variance explained)</h2><pre class="codeinput">mat_features_pca95 = feature_extraction(<span class="string">'PCA95'</span>, images);
+</pre><img vspace="5" hspace="5" src="main_gender_recognition_02.png" style="width:226px;height:158px;" alt=""> <h2 id="11">Feature Extraction using LDA</h2><pre class="codeinput">mat_features_lda = feature_extraction(<span class="string">'LDA'</span>, images, labels);
+</pre><h2 id="12">Classification</h2><p>Call the function validation to perform the F-fold cross validation with: the samples, labels, information about the training set subjects and F the number of folds.</p><pre class="codeinput">F = 10;
+Rates_pca = validation(mat_features_pca', labels', subjects', F);
+display(Rates_pca);
+Rates_pca95 = validation(mat_features_pca95', labels', subjects', F);
+display(Rates_pca95);
+Rates_lda = validation(mat_features_lda', labels', subjects', F);
+display(Rates_lda);
+</pre><pre class="codeoutput">Warning: KNNCLASSIFY will be removed in a future release. Use fitcknn to fit a
+KNN classification model and classify data using ClassificationKNN.predict. 
+Warning: KNNCLASSIFY will be removed in a future release. Use fitcknn to fit a
+KNN classification model and classify data using ClassificationKNN.predict. 
+Warning: KNNCLASSIFY will be removed in a future release. Use fitcknn to fit a
+KNN classification model and classify data using ClassificationKNN.predict. 
+Warning: KNNCLASSIFY will be removed in a future release. Use fitcknn to fit a
+KNN classification model and classify data using ClassificationKNN.predict. 
+Warning: KNNCLASSIFY will be removed in a future release. Use fitcknn to fit a
+KNN classification model and classify data using ClassificationKNN.predict. 
+Warning: KNNCLASSIFY will be removed in a future release. Use fitcknn to fit a
+KNN classification model and classify data using ClassificationKNN.predict. 
+Warning: KNNCLASSIFY will be removed in a future release. Use fitcknn to fit a
+KNN classification model and classify data using ClassificationKNN.predict. 
+Warning: KNNCLASSIFY will be removed in a future release. Use fitcknn to fit a
+KNN classification model and classify data using ClassificationKNN.predict. 
+Warning: KNNCLASSIFY will be removed in a future release. Use fitcknn to fit a
+KNN classification model and classify data using ClassificationKNN.predict. 
+Warning: KNNCLASSIFY will be removed in a future release. Use fitcknn to fit a
+KNN classification model and classify data using ClassificationKNN.predict. 
+
+Rates_pca = 
+
+  struct with fields:
+
+               Sens: 81.8087
+               Spec: 84.0787
+               Prec: 81.5544
+                FAR: 18.5031
+             Recall: 81.8087
+                Acc: 83.0288
+              Error: 17.8841
+    ConfusionMatrix: [2&times;2 double]
+
+Warning: KNNCLASSIFY will be removed in a future release. Use fitcknn to fit a
+KNN classification model and classify data using ClassificationKNN.predict. 
+Warning: KNNCLASSIFY will be removed in a future release. Use fitcknn to fit a
+KNN classification model and classify data using ClassificationKNN.predict. 
+Warning: KNNCLASSIFY will be removed in a future release. Use fitcknn to fit a
+KNN classification model and classify data using ClassificationKNN.predict. 
+Warning: KNNCLASSIFY will be removed in a future release. Use fitcknn to fit a
+KNN classification model and classify data using ClassificationKNN.predict. 
+Warning: KNNCLASSIFY will be removed in a future release. Use fitcknn to fit a
+KNN classification model and classify data using ClassificationKNN.predict. 
+Warning: KNNCLASSIFY will be removed in a future release. Use fitcknn to fit a
+KNN classification model and classify data using ClassificationKNN.predict. 
+Warning: KNNCLASSIFY will be removed in a future release. Use fitcknn to fit a
+KNN classification model and classify data using ClassificationKNN.predict. 
+Warning: KNNCLASSIFY will be removed in a future release. Use fitcknn to fit a
+KNN classification model and classify data using ClassificationKNN.predict. 
+Warning: KNNCLASSIFY will be removed in a future release. Use fitcknn to fit a
+KNN classification model and classify data using ClassificationKNN.predict. 
+Warning: KNNCLASSIFY will be removed in a future release. Use fitcknn to fit a
+KNN classification model and classify data using ClassificationKNN.predict. 
+
+Rates_pca95 = 
+
+  struct with fields:
+
+               Sens: 54.1667
+               Spec: 83.7413
+               Prec: 73.1602
+                FAR: 19.8718
+             Recall: 54.1667
+                Acc: 70.4327
+              Error: 18.8062
+    ConfusionMatrix: [2&times;2 double]
+
+Warning: KNNCLASSIFY will be removed in a future release. Use fitcknn to fit a
+KNN classification model and classify data using ClassificationKNN.predict. 
+Warning: KNNCLASSIFY will be removed in a future release. Use fitcknn to fit a
+KNN classification model and classify data using ClassificationKNN.predict. 
+Warning: KNNCLASSIFY will be removed in a future release. Use fitcknn to fit a
+KNN classification model and classify data using ClassificationKNN.predict. 
+Warning: KNNCLASSIFY will be removed in a future release. Use fitcknn to fit a
+KNN classification model and classify data using ClassificationKNN.predict. 
+Warning: KNNCLASSIFY will be removed in a future release. Use fitcknn to fit a
+KNN classification model and classify data using ClassificationKNN.predict. 
+Warning: KNNCLASSIFY will be removed in a future release. Use fitcknn to fit a
+KNN classification model and classify data using ClassificationKNN.predict. 
+Warning: KNNCLASSIFY will be removed in a future release. Use fitcknn to fit a
+KNN classification model and classify data using ClassificationKNN.predict. 
+Warning: KNNCLASSIFY will be removed in a future release. Use fitcknn to fit a
+KNN classification model and classify data using ClassificationKNN.predict. 
+Warning: KNNCLASSIFY will be removed in a future release. Use fitcknn to fit a
+KNN classification model and classify data using ClassificationKNN.predict. 
+Warning: KNNCLASSIFY will be removed in a future release. Use fitcknn to fit a
+KNN classification model and classify data using ClassificationKNN.predict. 
+
+Rates_lda = 
+
+  struct with fields:
+
+               Sens: 99.6795
+               Spec: 99.7378
+               Prec: 99.6795
+                FAR: 0.3205
+             Recall: 99.6795
+                Acc: 99.7115
+              Error: 0.3014
+    ConfusionMatrix: [2&times;2 double]
+
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2016b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+% Computational Vision
+% Practicum Face Recognition: Gender recognition
+%
+% Student name: ...
+%
+% >> OBJECTIVE: 
+% 1) Analize the code
+% 2) Understand the function of each part of the code
+% 3) Code the missing parts
+% 4) Answer the pose questions
+% 5) Execute the code 
+% 6) Check the results and comment them in the report
+
+% main function
+function main_gender_recognition()
+
+clc; close all; clear;
+
+%% These sub-directories are required
+addpath(genpath('feature_extraction'))
+addpath(genpath('classification'))
+
+%% Load database of images and analyze the structure
+ARFace = importdata('ARFace.mat');
+%% Prepare the data set samples identifying data and labels (male/female).
+% We will use the internal faces loaded in the structure
+display(ARFace)
+%% Count the number of samples and samples males and females of the data set.
+% This information is in ARFace.gender ==> male == 1, female == 0
+% 1. To complete:
+NumberSamples = length(ARFace.gender)
+NumberMales = length(ARFace.gender(ARFace.gender == 1))
+NumberFemales = length(ARFace.gender(ARFace.gender == 0))
+
+%% Define the training set and test set from the data set using:
+% a. Use the whole data set (an unbalanced problem)
+% Build this data structure: 
+%   images(:,i) is the image of sample i.
+%   labels(i) is the label of sample i.
+%   subjects(i) is the number of the subject of sample i.
+% Use the "internal" images, we will reduce dimensionality later.
+
+% 3. To complete:
+ images = ARFace.internal;
+ labels = ARFace.gender;
+ subjects = ARFace.person;
+    
+%% Atention! We will use the dataset in the representation: Sample x Variables (Samples x 1188):
+images = images';
+labels = labels';
+subjects = subjects';
+
+%% Feature Extraction using PCA
+mat_features_pca = feature_extraction('PCA', images);
+
+%% Feature Extraction using PCA (95% variance explained)
+mat_features_pca95 = feature_extraction('PCA95', images);
+
+%% Feature Extraction using LDA
+mat_features_lda = feature_extraction('LDA', images, labels);
+
+
+%% Classification
+% Call the function validation to perform the F-fold
+% cross validation with: the samples, labels, information
+% about the training set subjects and F the number of folds.
+F = 10;
+Rates_pca = validation(mat_features_pca', labels', subjects', F);
+display(Rates_pca);
+Rates_pca95 = validation(mat_features_pca95', labels', subjects', F);
+display(Rates_pca95);
+Rates_lda = validation(mat_features_lda', labels', subjects', F);
+display(Rates_lda);
+
+
+end
+
+
+
+
+##### SOURCE END #####
+--></body></html>
