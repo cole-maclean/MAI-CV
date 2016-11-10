@@ -1,13 +1,13 @@
 %% Panoramic
-Ia = imread('images/im2_ex1.jpg');
-Ib = imread('images/im1_ex1.jpg');
+Ia = imread('images/im2_ex2.jpg');
+Ib = imread('images/im1_ex2.jpg');
 imshow(rgb2gray(Ia)); title('Left Input Image');
 snapnow;
 imshow(rgb2gray(Ib)); title('Right Input Image');
 snapnow;
 Ia = single(rgb2gray(Ia));
 Ib = single(rgb2gray(Ib));
-M = 1;
+M = 1000;
 [fa,da] = vl_sift(Ia);
 [fb,db] = vl_sift(Ib);
 [matches, scores] = vl_ubcmatch(da,db);
@@ -15,7 +15,7 @@ numMatches = size(matches,2);
 xa = fa(1:2,matches(1,:));
 xb = fb(1:2,matches(2,:));
 
-max_n = 0;
+max_n = -1;
 for i=1:M
     subset = vl_colsubset(1:numMatches, 10);
     d = xb(1:2,subset) - xa(1:2,subset);

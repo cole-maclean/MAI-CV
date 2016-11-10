@@ -1,0 +1,601 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>FD_ex1</title><meta name="generator" content="MATLAB 9.1"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-11-10"><meta name="DC.source" content="FD_ex1.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#3">Initialization</a></li><li><a href="#4">Draw the 2 feature masks (just for visualization purpose)</a></li><li><a href="#5">Load image, compute Integral Image and visualize it</a></li><li><a href="#6">Compute features for regions with faces</a></li><li><a href="#7">Compute features for regions with non-faces</a></li><li><a href="#8">Visualize samples in the feature space</a></li><li><a href="#9">Visualize image with used regions</a></li><li><a href="#10">Part 2:</a></li><li><a href="#11">Define the new regions of the test image</a></li><li><a href="#12">Compute features for these new regions</a></li><li><a href="#13">Train a k-nn classifier and test the new windows</a></li><li><a href="#14">Visualize samples in the feature space</a></li><li><a href="#15">Visualize classification results in the test image</a></li></ul></div><pre class="codeinput"><span class="comment">% Computational Vision</span>
+<span class="comment">% Student names: ...</span>
+<span class="comment">%</span>
+<span class="comment">% &gt;&gt; OBJECTIVE:</span>
+<span class="comment">% 1) Analize the code</span>
+<span class="comment">% 2) Understand the function of each part of the code</span>
+<span class="comment">% 3) Code the missing parts</span>
+<span class="comment">% 4) Execute the code and check the results</span>
+<span class="comment">% 5) Comment the experiments and results in a report</span>
+
+<span class="comment">% main function</span>
+<span class="keyword">function</span> FD_ex1()
+</pre><pre class="codeinput">clc; close <span class="string">all</span>; clear;
+</pre><h2 id="3">Initialization</h2><p>Define Viola &amp; Jones parameters for the first two feature masks SEE THE ATTACHED IMAGE FOR DETAILS!!!</p><pre class="codeinput">L = 80;                            <span class="comment">% mask size [px]</span>
+d1 = 10; d2 = 15; d3 = 20; d4 = 10; <span class="comment">% distances from the border</span>
+w1 = 50; w2 = 20; w3 = 20;          <span class="comment">% width of the rectangles</span>
+h1 = 10; h2 = 20;                   <span class="comment">% height of the rectangles</span>
+
+<span class="comment">%L = 50;                            % mask size [px]</span>
+<span class="comment">%d1 = 10; d2 = 15; d3 = 20; d4 = 10; % distances from the border</span>
+<span class="comment">%w1 = 30; w2 = 10; w3 = 10;          % width of the rectangles</span>
+<span class="comment">%h1 = 10; h2 = 20;                   % height of the rectangles</span>
+</pre><h2 id="4">Draw the 2 feature masks (just for visualization purpose)</h2><pre class="codeinput">m1 = zeros(L,L);
+m2 = zeros(L,L);
+
+m1(d1+1:d1+h1,d2+1:d2+w1) = 1;
+m1(d1+1+h1:d1+2*h1,d2+1:d2+w1) = 2;
+figure(1);
+imagesc(m1);
+title(<span class="string">'Rectangluar mask for feature 1'</span>);
+axis <span class="string">square</span>;
+colormap([128 128 128; 0 0 0; 255 255 255]/255);
+
+m2(d3+1:d3+h2,d4+1:d4+w2) = 1;
+m2(d3+1:d3+h2,d4+w2+1:d4+w2+w3) = 2;
+m2(d3+1:d3+h2,d4+w2+w3+1:d4+2*w2+w3) = 1;
+figure(2);
+imagesc(m2);
+title(<span class="string">'Rectangluar mask for feature 2'</span>);
+axis <span class="string">square</span>;
+colormap([128 128 128; 0 0 0; 255 255 255]/255);
+</pre><img vspace="5" hspace="5" src="FD_ex1_01.png" style="width:560px;height:420px;" alt=""> <img vspace="5" hspace="5" src="FD_ex1_02.png" style="width:560px;height:420px;" alt=""> <h2 id="5">Load image, compute Integral Image and visualize it</h2><pre class="codeinput"><span class="comment">% Load image 'NASA1.jpg' and convert image from rgb to grayscale</span>
+I = rgb2gray(imread(<span class="string">'NASA1.bmp'</span>));
+imshow(I)
+<span class="comment">% Compute the Integral Image</span>
+<span class="comment">% &gt;&gt; code to compute the integral image S &lt;&lt;</span>
+S = cumsum(cumsum(double(I),2));
+</pre><img vspace="5" hspace="5" src="FD_ex1_03.png" style="width:725px;height:520px;" alt=""> <h2 id="6">Compute features for regions with faces</h2><pre class="codeinput"><span class="comment">% (X,Y) coordinates of the top-left corner of windows with face</span>
+X = [193 340 444 573 717 834 979 1066 1224 195 445 717 964 1200];
+Y = [118 151 112 177 114 177 121 184 127 270 298 279 285 295];
+XY_FACE =  [X' Y'];    <span class="comment">%[x1 y1; x2 y2 .....]</span>
+
+<span class="comment">% Initialize the feature matrix for faces</span>
+FEAT_FACE = [];
+
+<span class="keyword">for</span> i = 1:size(XY_FACE,1)
+
+    <span class="comment">% current top-left corner coordinates</span>
+     x = XY_FACE(i,1);
+     y = XY_FACE(i,2);
+
+    <span class="comment">% compute area of regions A and B for the first feature</span>
+    <span class="comment">% HERE WE USE INTEGRAL IMAGE!</span>
+    area_A = S(y+d1+h1,x+d2+w1) - S(y+d1+1,x+d2+w1) - (S(y+d1+h1,x+d2+1) - S(y+d1+1,x+d2+1));
+    area_B = S(y+2*h1+d1,x+w1+d2) - S(y+d1+h1+1,x+d2+w1) - (S(y+d1+2*h1,x+d2+1)-S(y+d1+h1+1,x+d2+1));
+
+    <span class="comment">% compute area of regions C, D and E for the second feature</span>
+    <span class="comment">% HERE WE USE INTEGRAL IMAGE!</span>
+    <span class="comment">% &gt;&gt; code to compute the area of regions C and E &lt;&lt;</span>
+         area_C = S(y+d3+h2,x+d4+w2) - S(y+d3+1,x+d4+w2) - (S(y+d3+h2,x+d4+1) - S(y+d3+1,x+d4+1));
+         area_D = S(y+d3+h2,x+d4+w2+w3) - S(y+d3+1,x+d4+w2+w3) - (S(y+d3+h2,x+d4+w2+1) - S(y+d3+1,x+d4+w2+1));
+         area_E = S(y+d3+h2,x+d4+w2+w3+w2) - S(y+d3+1,x+d4+w2+w3+w2) - (S(y+d3+h2,x+d4+w2+w3+1) - S(y+d3+1,x+d4+w2+w3+1));
+
+
+    <span class="comment">% compute features value</span>
+    F1 = area_B - area_A;
+    F2 = area_D - (area_C + area_E);
+
+    <span class="comment">% cumulate the computed values</span>
+    FEAT_FACE = [FEAT_FACE; [F1 F2]];
+
+<span class="keyword">end</span>
+</pre><h2 id="7">Compute features for regions with non-faces</h2><pre class="codeinput"><span class="comment">% (X,Y) coordinates of the top-left corner of windows with non-face</span>
+X=[ 28 307 574 829 1093 203 350 523 580 800 931 1127 692 1265];
+Y=[ 36    28    27    30    46   768   757   742   859   745   912   777   994   820];
+XY_NON_FACE = [X' Y'];
+
+<span class="comment">% Initialize the feature matrix for non-faces</span>
+FEAT_NON_FACE = [];
+
+<span class="keyword">for</span> i = 1:size(XY_NON_FACE,1)
+
+    <span class="comment">% current top-left corner coordinates</span>
+    x = XY_NON_FACE(i,1); y = XY_NON_FACE(i,2);
+
+    <span class="comment">% compute area of regions A and B for the first feature</span>
+    <span class="comment">% HERE WE USE INTEGRAL IMAGE!</span>
+    area_A = S(y+d1+h1,x+d2+w1) - S(y+d1+1,x+d2+w1) - (S(y+d1+h1,x+d2+1) - S(y+d1+1,x+d2+1));
+    area_B = S(y+2*h1+d1,x+w1+d2) - S(y+d1+h1+1,x+d2+w1) - (S(y+d1+2*h1,x+d2+1)-S(y+d1+h1+1,x+d2+1));
+
+    <span class="comment">% compute area of regions C, D and E for the second feature</span>
+    <span class="comment">% HERE WE USE INTEGRAL IMAGE!</span>
+    <span class="comment">% &gt;&gt; code to compute the area of regions C and E &lt;&lt;</span>
+         area_C = S(y+d3+h2,x+d4+w2) - S(y+d3+1,x+d4+w2) - (S(y+d3+h2,x+d4+1) - S(y+d3+1,x+d4+1));
+         area_D = S(y+d3+h2,x+d4+w2+w3) - S(y+d3+1,x+d4+w2+w3) - (S(y+d3+h2,x+d4+w2+1) - S(y+d3+1,x+d4+w2+1));
+         area_E = S(y+d3+h2,x+d4+w2+w3+w2) - S(y+d3+1,x+d4+w2+w3+w2) - (S(y+d3+h2,x+d4+w2+w3+1) - S(y+d3+1,x+d4+w2+w3+1));
+
+    <span class="comment">% compute features value</span>
+    F1 = area_B - area_A;
+    F2 = area_D - (area_C + area_E);
+
+    <span class="comment">% cumulate the computed values</span>
+    FEAT_NON_FACE = [FEAT_NON_FACE; [F1 F2]];
+
+<span class="keyword">end</span>
+</pre><h2 id="8">Visualize samples in the feature space</h2><pre class="codeinput">figure(3)
+hold <span class="string">on</span>
+scatter(FEAT_FACE(:,1),FEAT_FACE(:,2),<span class="string">'g'</span>);
+scatter(FEAT_NON_FACE(:,1),FEAT_NON_FACE(:,2),<span class="string">'r'</span>);
+xlabel(<span class="string">'Feature 1'</span>);
+ylabel(<span class="string">'Feature 2'</span>);
+title(<span class="string">'Feature space'</span>);
+</pre><img vspace="5" hspace="5" src="FD_ex1_04.png" style="width:560px;height:420px;" alt=""> <h2 id="9">Visualize image with used regions</h2><pre class="codeinput">figure(4);
+imshow(I);
+
+<span class="comment">% patches with faces</span>
+<span class="keyword">for</span> i = 1:size(XY_FACE,1)
+    PATCH = [XY_FACE(i,:) L L];
+    Rectangle = [PATCH(1) PATCH(2); PATCH(1)+PATCH(3) PATCH(2); PATCH(1)+PATCH(3) PATCH(2)+PATCH(4); PATCH(1)  PATCH(2)+PATCH(4); PATCH(1) PATCH(2)];
+    hold <span class="string">on</span>;
+    plot (Rectangle(:,1), Rectangle(:,2), <span class="string">'g'</span>);
+    hold <span class="string">off</span>;
+<span class="keyword">end</span>
+
+<span class="comment">% patches without faces</span>
+<span class="keyword">for</span> i = 1:size(XY_NON_FACE,1)
+    PATCH = [XY_NON_FACE(i,:) L L];
+    Rectangle = [PATCH(1) PATCH(2); PATCH(1)+PATCH(3) PATCH(2); PATCH(1)+PATCH(3) PATCH(2)+PATCH(4); PATCH(1)  PATCH(2)+PATCH(4); PATCH(1) PATCH(2)];
+    hold <span class="string">on</span>;
+    plot (Rectangle(:,1), Rectangle(:,2), <span class="string">'r'</span>);
+    hold <span class="string">off</span>;
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="FD_ex1_05.png" style="width:725px;height:520px;" alt=""> <h2 id="10">Part 2:</h2><h2 id="11">Define the new regions of the test image</h2><pre class="codeinput"><span class="comment">% Load image 'NASA2.bmp' and convert image from rgb to grayscale</span>
+<span class="comment">% &gt;&gt; code here &lt;&lt;</span>
+I = rgb2gray(imread(<span class="string">'NASA2.bmp'</span>));
+<span class="comment">% Select regions with FACES and NON-FACES</span>
+figure(), imshow(I);
+[x1, y1] = ginput(20);
+
+<span class="comment">% You could use ginput only once and then copy the coordinates</span>
+<span class="comment">% &gt;&gt; copy coordinates here: &lt;&lt;</span>
+x1 = x1;
+y1 = y1;
+
+x1 = round(x1);
+y1 = round(y1);
+
+<span class="comment">% (X,Y) coordinates of the top-left corner of windows with face</span>
+XY_TEST = [x1 y1];
+TEST_FACE = XY_TEST(1:11,:);
+TEST_NON_FACE = XY_TEST(11:20,:);
+</pre><pre class="codeoutput error">Error using ginput (line 81)
+Interrupted by figure deletion
+
+Error in FD_ex1 (line 176)
+[x1, y1] = ginput(20);
+</pre><h2 id="12">Compute features for these new regions</h2><p>Compute the Integral Image &gt;&gt; code here &lt;&lt;</p><pre class="codeinput">S = cumsum(cumsum(double(I),2));
+<span class="comment">% Initialize the feature matrix for faces</span>
+FEAT_TEST = [];
+
+<span class="keyword">for</span> i = 1:size(XY_TEST,1)
+
+    <span class="comment">% current top-left corner coordinates</span>
+    x = XY_TEST(i,1);
+    y = XY_TEST(i,2);
+
+    <span class="comment">% compute area of regions A and B for the first feature</span>
+    <span class="comment">% HERE WE USE INTEGRAL IMAGE!</span>
+    area_A = S(y+d1+h1,x+d2+w1) - S(y+d1+1,x+d2+w1) - (S(y+d1+h1,x+d2+1) - S(y+d1+1,x+d2+1));
+    area_B = S(y+2*h1+d1,x+w1+d2) - S(y+d1+h1+1,x+d2+w1) - (S(y+d1+2*h1,x+d2+1)-S(y+d1+h1+1,x+d2+1));
+
+    <span class="comment">% compute area of regions C, D and E for the second feature</span>
+    <span class="comment">% HERE WE USE INTEGRAL IMAGE!</span>
+         area_C = S(y+d3+h2,x+d4+w2) - S(y+d3+1,x+d4+w2) - (S(y+d3+h2,x+d4+1) - S(y+d3+1,x+d4+1));
+         area_D = S(y+d3+h2,x+d4+w2+w3) - S(y+d3+1,x+d4+w2+w3) - (S(y+d3+h2,x+d4+w2+1) - S(y+d3+1,x+d4+w2+1));
+         area_E = S(y+d3+h2,x+d4+w2+w3+w2) - S(y+d3+1,x+d4+w2+w3+w2) - (S(y+d3+h2,x+d4+w2+w3+1) - S(y+d3+1,x+d4+w2+w3+1));
+
+    <span class="comment">% compute features value</span>
+    F1 = area_B - area_A;
+    F2 = area_D - (area_C + area_E);
+
+    <span class="comment">% cumulate the computed values</span>
+    FEAT_TEST = [FEAT_TEST; [F1 F2]];
+
+<span class="keyword">end</span>
+</pre><h2 id="13">Train a k-nn classifier and test the new windows</h2><pre class="codeinput">features_train = [FEAT_FACE; FEAT_NON_FACE];
+Group = [repmat(1, length(FEAT_FACE), 1); repmat(2, length(FEAT_NON_FACE), 1)];
+<span class="comment">% Call the function knnclassify</span>
+<span class="comment">% &gt;&gt; code here &lt;&lt;</span>
+class = knnclassify(FEAT_TEST,features_train, Group);
+face_rows = class == 1;
+non_face_rows = class == 2;
+</pre><h2 id="14">Visualize samples in the feature space</h2><p>First, visualize the training samples:</p><pre class="codeinput">figure();
+hold <span class="string">on</span>
+scatter(FEAT_FACE(:,1),FEAT_FACE(:,2),<span class="string">'g'</span>);
+scatter(FEAT_NON_FACE(:,1),FEAT_NON_FACE(:,2),<span class="string">'r'</span>);
+xlabel(<span class="string">'Feature 1'</span>);
+ylabel(<span class="string">'Feature 2'</span>);
+title(<span class="string">'Feature space'</span>);
+
+<span class="comment">% Second, visualize the test samples in two different colors</span>
+<span class="comment">% &gt;&gt; code here &lt;&lt;</span>
+figure();
+hold <span class="string">on</span>
+scatter(TEST_FACE(:,1),TEST_FACE(:,2),<span class="string">'r'</span>);
+scatter(TEST_NON_FACE(:,1),TEST_NON_FACE(:,2),<span class="string">'g'</span>);
+xlabel(<span class="string">'Feature 1'</span>);
+ylabel(<span class="string">'Feature 2'</span>);
+title(<span class="string">'Feature space'</span>);
+</pre><h2 id="15">Visualize classification results in the test image</h2><pre class="codeinput"><span class="comment">% Visualize image 'NASA2.bmp' with used regions</span>
+figure(4);
+imshow(I);
+
+faces = XY_TEST(face_rows,:)
+non_faces = XY_TEST(non_face_rows,:)
+
+<span class="comment">% patches with faces</span>
+<span class="keyword">for</span> i = 1:size(faces,1)
+    PATCH = [faces(i,:) L L];
+    Rectangle = [PATCH(1) PATCH(2); PATCH(1)+PATCH(3) PATCH(2); PATCH(1)+PATCH(3) PATCH(2)+PATCH(4); PATCH(1)  PATCH(2)+PATCH(4); PATCH(1) PATCH(2)];
+    hold <span class="string">on</span>;
+    plot (Rectangle(:,1), Rectangle(:,2), <span class="string">'g'</span>);
+    hold <span class="string">off</span>;
+<span class="keyword">end</span>
+
+<span class="comment">% patches without faces</span>
+<span class="keyword">for</span> i = 1:size(non_faces,1)
+    PATCH = [non_faces(i,:) L L];
+    Rectangle = [PATCH(1) PATCH(2); PATCH(1)+PATCH(3) PATCH(2); PATCH(1)+PATCH(3) PATCH(2)+PATCH(4); PATCH(1)  PATCH(2)+PATCH(4); PATCH(1) PATCH(2)];
+    hold <span class="string">on</span>;
+    plot (Rectangle(:,1), Rectangle(:,2), <span class="string">'r'</span>);
+    hold <span class="string">off</span>;
+<span class="keyword">end</span>
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2016b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+% Computational Vision
+% Student names: ...
+%
+% >> OBJECTIVE: 
+% 1) Analize the code
+% 2) Understand the function of each part of the code
+% 3) Code the missing parts
+% 4) Execute the code and check the results
+% 5) Comment the experiments and results in a report
+
+% main function
+function FD_ex1()
+
+clc; close all; clear;
+
+%% Initialization
+% Define Viola & Jones parameters for the first two feature masks
+% SEE THE ATTACHED IMAGE FOR DETAILS!!!
+L = 80;                            % mask size [px]
+d1 = 10; d2 = 15; d3 = 20; d4 = 10; % distances from the border
+w1 = 50; w2 = 20; w3 = 20;          % width of the rectangles
+h1 = 10; h2 = 20;                   % height of the rectangles
+
+%L = 50;                            % mask size [px]
+%d1 = 10; d2 = 15; d3 = 20; d4 = 10; % distances from the border
+%w1 = 30; w2 = 10; w3 = 10;          % width of the rectangles
+%h1 = 10; h2 = 20;                   % height of the rectangles
+
+
+%% Draw the 2 feature masks (just for visualization purpose)
+m1 = zeros(L,L);
+m2 = zeros(L,L);
+
+m1(d1+1:d1+h1,d2+1:d2+w1) = 1;
+m1(d1+1+h1:d1+2*h1,d2+1:d2+w1) = 2;
+figure(1);
+imagesc(m1);
+title('Rectangluar mask for feature 1');
+axis square;
+colormap([128 128 128; 0 0 0; 255 255 255]/255);
+
+m2(d3+1:d3+h2,d4+1:d4+w2) = 1;
+m2(d3+1:d3+h2,d4+w2+1:d4+w2+w3) = 2;
+m2(d3+1:d3+h2,d4+w2+w3+1:d4+2*w2+w3) = 1;
+figure(2);
+imagesc(m2);
+title('Rectangluar mask for feature 2');
+axis square;
+colormap([128 128 128; 0 0 0; 255 255 255]/255);
+
+
+%% Load image, compute Integral Image and visualize it
+
+% Load image 'NASA1.jpg' and convert image from rgb to grayscale 
+I = rgb2gray(imread('NASA1.bmp'));
+imshow(I)
+% Compute the Integral Image
+% >> code to compute the integral image S <<
+S = cumsum(cumsum(double(I),2));
+
+%% Compute features for regions with faces
+
+% (X,Y) coordinates of the top-left corner of windows with face
+X = [193 340 444 573 717 834 979 1066 1224 195 445 717 964 1200];
+Y = [118 151 112 177 114 177 121 184 127 270 298 279 285 295];
+XY_FACE =  [X' Y'];    %[x1 y1; x2 y2 .....]
+
+% Initialize the feature matrix for faces
+FEAT_FACE = [];
+
+for i = 1:size(XY_FACE,1)
+    
+    % current top-left corner coordinates
+     x = XY_FACE(i,1); 
+     y = XY_FACE(i,2);
+    
+    % compute area of regions A and B for the first feature
+    % HERE WE USE INTEGRAL IMAGE!
+    area_A = S(y+d1+h1,x+d2+w1) - S(y+d1+1,x+d2+w1) - (S(y+d1+h1,x+d2+1) - S(y+d1+1,x+d2+1));
+    area_B = S(y+2*h1+d1,x+w1+d2) - S(y+d1+h1+1,x+d2+w1) - (S(y+d1+2*h1,x+d2+1)-S(y+d1+h1+1,x+d2+1));
+    
+    % compute area of regions C, D and E for the second feature
+    % HERE WE USE INTEGRAL IMAGE!
+    % >> code to compute the area of regions C and E <<
+         area_C = S(y+d3+h2,x+d4+w2) - S(y+d3+1,x+d4+w2) - (S(y+d3+h2,x+d4+1) - S(y+d3+1,x+d4+1));
+         area_D = S(y+d3+h2,x+d4+w2+w3) - S(y+d3+1,x+d4+w2+w3) - (S(y+d3+h2,x+d4+w2+1) - S(y+d3+1,x+d4+w2+1));
+         area_E = S(y+d3+h2,x+d4+w2+w3+w2) - S(y+d3+1,x+d4+w2+w3+w2) - (S(y+d3+h2,x+d4+w2+w3+1) - S(y+d3+1,x+d4+w2+w3+1));
+    
+    
+    % compute features value
+    F1 = area_B - area_A;
+    F2 = area_D - (area_C + area_E);
+    
+    % cumulate the computed values
+    FEAT_FACE = [FEAT_FACE; [F1 F2]];
+    
+end
+
+%% Compute features for regions with non-faces
+
+% (X,Y) coordinates of the top-left corner of windows with non-face
+X=[ 28 307 574 829 1093 203 350 523 580 800 931 1127 692 1265];
+Y=[ 36    28    27    30    46   768   757   742   859   745   912   777   994   820];
+XY_NON_FACE = [X' Y'];
+
+% Initialize the feature matrix for non-faces
+FEAT_NON_FACE = [];
+
+for i = 1:size(XY_NON_FACE,1)
+    
+    % current top-left corner coordinates
+    x = XY_NON_FACE(i,1); y = XY_NON_FACE(i,2);
+    
+    % compute area of regions A and B for the first feature
+    % HERE WE USE INTEGRAL IMAGE!
+    area_A = S(y+d1+h1,x+d2+w1) - S(y+d1+1,x+d2+w1) - (S(y+d1+h1,x+d2+1) - S(y+d1+1,x+d2+1));
+    area_B = S(y+2*h1+d1,x+w1+d2) - S(y+d1+h1+1,x+d2+w1) - (S(y+d1+2*h1,x+d2+1)-S(y+d1+h1+1,x+d2+1));
+    
+    % compute area of regions C, D and E for the second feature
+    % HERE WE USE INTEGRAL IMAGE!
+    % >> code to compute the area of regions C and E <<
+         area_C = S(y+d3+h2,x+d4+w2) - S(y+d3+1,x+d4+w2) - (S(y+d3+h2,x+d4+1) - S(y+d3+1,x+d4+1));
+         area_D = S(y+d3+h2,x+d4+w2+w3) - S(y+d3+1,x+d4+w2+w3) - (S(y+d3+h2,x+d4+w2+1) - S(y+d3+1,x+d4+w2+1));
+         area_E = S(y+d3+h2,x+d4+w2+w3+w2) - S(y+d3+1,x+d4+w2+w3+w2) - (S(y+d3+h2,x+d4+w2+w3+1) - S(y+d3+1,x+d4+w2+w3+1));
+    
+    % compute features value
+    F1 = area_B - area_A;
+    F2 = area_D - (area_C + area_E);
+    
+    % cumulate the computed values
+    FEAT_NON_FACE = [FEAT_NON_FACE; [F1 F2]];
+    
+end
+
+%% Visualize samples in the feature space
+figure(3)
+hold on
+scatter(FEAT_FACE(:,1),FEAT_FACE(:,2),'g');
+scatter(FEAT_NON_FACE(:,1),FEAT_NON_FACE(:,2),'r');
+xlabel('Feature 1');
+ylabel('Feature 2');
+title('Feature space');
+%% Visualize image with used regions
+figure(4);
+imshow(I);
+
+% patches with faces
+for i = 1:size(XY_FACE,1)
+    PATCH = [XY_FACE(i,:) L L];
+    Rectangle = [PATCH(1) PATCH(2); PATCH(1)+PATCH(3) PATCH(2); PATCH(1)+PATCH(3) PATCH(2)+PATCH(4); PATCH(1)  PATCH(2)+PATCH(4); PATCH(1) PATCH(2)];
+    hold on;
+    plot (Rectangle(:,1), Rectangle(:,2), 'g');
+    hold off;
+end
+
+% patches without faces
+for i = 1:size(XY_NON_FACE,1)
+    PATCH = [XY_NON_FACE(i,:) L L];
+    Rectangle = [PATCH(1) PATCH(2); PATCH(1)+PATCH(3) PATCH(2); PATCH(1)+PATCH(3) PATCH(2)+PATCH(4); PATCH(1)  PATCH(2)+PATCH(4); PATCH(1) PATCH(2)];
+    hold on;
+    plot (Rectangle(:,1), Rectangle(:,2), 'r');
+    hold off;
+end
+
+
+
+%% Part 2:
+
+%% Define the new regions of the test image 
+
+% Load image 'NASA2.bmp' and convert image from rgb to grayscale 
+% >> code here <<
+I = rgb2gray(imread('NASA2.bmp'));
+% Select regions with FACES and NON-FACES
+figure(), imshow(I);
+[x1, y1] = ginput(20);
+
+% You could use ginput only once and then copy the coordinates
+% >> copy coordinates here: <<
+x1 = x1;
+y1 = y1;
+
+x1 = round(x1);
+y1 = round(y1);
+
+% (X,Y) coordinates of the top-left corner of windows with face
+XY_TEST = [x1 y1];
+TEST_FACE = XY_TEST(1:11,:);
+TEST_NON_FACE = XY_TEST(11:20,:); 
+%% Compute features for these new regions
+% Compute the Integral Image
+% >> code here <<
+S = cumsum(cumsum(double(I),2));
+% Initialize the feature matrix for faces
+FEAT_TEST = [];
+
+for i = 1:size(XY_TEST,1)
+    
+    % current top-left corner coordinates
+    x = XY_TEST(i,1);
+    y = XY_TEST(i,2);
+    
+    % compute area of regions A and B for the first feature
+    % HERE WE USE INTEGRAL IMAGE!
+    area_A = S(y+d1+h1,x+d2+w1) - S(y+d1+1,x+d2+w1) - (S(y+d1+h1,x+d2+1) - S(y+d1+1,x+d2+1));
+    area_B = S(y+2*h1+d1,x+w1+d2) - S(y+d1+h1+1,x+d2+w1) - (S(y+d1+2*h1,x+d2+1)-S(y+d1+h1+1,x+d2+1));
+    
+    % compute area of regions C, D and E for the second feature
+    % HERE WE USE INTEGRAL IMAGE!
+         area_C = S(y+d3+h2,x+d4+w2) - S(y+d3+1,x+d4+w2) - (S(y+d3+h2,x+d4+1) - S(y+d3+1,x+d4+1));
+         area_D = S(y+d3+h2,x+d4+w2+w3) - S(y+d3+1,x+d4+w2+w3) - (S(y+d3+h2,x+d4+w2+1) - S(y+d3+1,x+d4+w2+1));
+         area_E = S(y+d3+h2,x+d4+w2+w3+w2) - S(y+d3+1,x+d4+w2+w3+w2) - (S(y+d3+h2,x+d4+w2+w3+1) - S(y+d3+1,x+d4+w2+w3+1));
+    
+    % compute features value
+    F1 = area_B - area_A;
+    F2 = area_D - (area_C + area_E);
+
+    % cumulate the computed values
+    FEAT_TEST = [FEAT_TEST; [F1 F2]];
+    
+end
+
+
+%% Train a k-nn classifier and test the new windows
+features_train = [FEAT_FACE; FEAT_NON_FACE];
+Group = [repmat(1, length(FEAT_FACE), 1); repmat(2, length(FEAT_NON_FACE), 1)];
+% Call the function knnclassify
+% >> code here <<
+class = knnclassify(FEAT_TEST,features_train, Group);
+face_rows = class == 1;
+non_face_rows = class == 2;
+%% Visualize samples in the feature space
+% First, visualize the training samples:
+figure();
+hold on
+scatter(FEAT_FACE(:,1),FEAT_FACE(:,2),'g');
+scatter(FEAT_NON_FACE(:,1),FEAT_NON_FACE(:,2),'r');
+xlabel('Feature 1');
+ylabel('Feature 2');
+title('Feature space');
+
+% Second, visualize the test samples in two different colors
+% >> code here <<
+figure();
+hold on
+scatter(TEST_FACE(:,1),TEST_FACE(:,2),'r');
+scatter(TEST_NON_FACE(:,1),TEST_NON_FACE(:,2),'g');
+xlabel('Feature 1');
+ylabel('Feature 2');
+title('Feature space');
+
+%% Visualize classification results in the test image
+
+% Visualize image 'NASA2.bmp' with used regions
+figure(4);
+imshow(I);
+
+faces = XY_TEST(face_rows,:)
+non_faces = XY_TEST(non_face_rows,:)
+
+% patches with faces
+for i = 1:size(faces,1)
+    PATCH = [faces(i,:) L L];
+    Rectangle = [PATCH(1) PATCH(2); PATCH(1)+PATCH(3) PATCH(2); PATCH(1)+PATCH(3) PATCH(2)+PATCH(4); PATCH(1)  PATCH(2)+PATCH(4); PATCH(1) PATCH(2)];
+    hold on;
+    plot (Rectangle(:,1), Rectangle(:,2), 'g');
+    hold off;
+end
+
+% patches without faces
+for i = 1:size(non_faces,1)
+    PATCH = [non_faces(i,:) L L];
+    Rectangle = [PATCH(1) PATCH(2); PATCH(1)+PATCH(3) PATCH(2); PATCH(1)+PATCH(3) PATCH(2)+PATCH(4); PATCH(1)  PATCH(2)+PATCH(4); PATCH(1) PATCH(2)];
+    hold on;
+    plot (Rectangle(:,1), Rectangle(:,2), 'r');
+    hold off;
+end
+
+end
+
+
+
+
+
+
+##### SOURCE END #####
+--></body></html>
