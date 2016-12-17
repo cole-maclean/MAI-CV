@@ -1,6 +1,6 @@
 function descriptor=getFeatures(img)
-%% Read the image
-img=imread(img);
+%% Read the image for displaying the results
+%img=imread(img);
 
 %% Create filters
 F=makeLMfilters;
@@ -16,11 +16,13 @@ for i=1:size(F,3);
     descriptor(i)=mean(mean(abs(responses(:,:,i))));
 end
 
-% Plot convolved images
-figure
-for k=1:size(F,3);
-    subplot(8,6,k);
-    imagesc(responses(:,:,k)); colorbar;
-end
+%Plot convolved images
+
+% figure
+% for k=1:size(F,3);
+%     subplot(8,6,k);
+%     imagesc(responses(:,:,k)); colorbar;
+%     
+% end
 
 end

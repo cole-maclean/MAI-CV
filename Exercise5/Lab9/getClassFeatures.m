@@ -1,18 +1,24 @@
-function [imagesPath,classArray]=getClassFeatures(directory)
+function [ classFeatures, images ] = getClassFeatures( dirP, extension )
 % Get all images in the directory and all its sub-folders
-imgSet=imageSet(directory,'recursive');
+files=dir(fullfile(dirP,strcat('*.',extension)));
 
-% Join all image paths into one cell so we can retrace back to them
-imagesPath=cell(0);
-for c=1:length(imgSet)
-    imagesPath=[imagesPath;imgSet(c).ImageLocation'];
+images=zeros(size(files,1),1);
+
+% Create LM filters
+F=makeLMfilters(); 
+
+classFeatures=zeros(1,size(F,3));
+imsize=size(imread(fullfile(dirP, files(1).name)));
+images=zeros(size(files,1),imsize(1),imsize(2),imsize(3));
+
+for i=1:size(files,1)
+    img=imread(fullfile(dirP, files(i).name));
+    images(i,:,:,:)=img;
+    classFeatures(i,:)=getFeatures(img);    
+end;
+
+%use this for saving the results
+%save('sunset.mat', 'classFeatures')
+
 end
 
-% % Get class features for the images
-classArray=[];
-for i=1:length(imagesPath) %for each image
-    img=imread(imagesPath{i,1});
-    classArray(i,:)=getFeatures(img);
-end
-
-end
