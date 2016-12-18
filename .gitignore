@@ -3,4 +3,6 @@
 *.jpg
 *.png
 *.gif
+*.bmp
+
 vlfeat/

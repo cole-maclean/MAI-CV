@@ -72,7 +72,6 @@ display(Rates_pca95);
 Rates_lda = validation(mat_features_lda', labels', subjects', F);
 display(Rates_lda);
 
-
 end
 
 

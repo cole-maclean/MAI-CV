@@ -18,11 +18,11 @@ end
 
 %Plot convolved images
 
-% figure
-% for k=1:size(F,3);
-%     subplot(8,6,k);
-%     imagesc(responses(:,:,k)); colorbar;
-%     
-% end
+ %figure
+ %for k=1:size(F,3);
+     %subplot(8,6,k);
+     %imagesc(responses(:,:,k)); colorbar;
+     
+ %end
 
 end

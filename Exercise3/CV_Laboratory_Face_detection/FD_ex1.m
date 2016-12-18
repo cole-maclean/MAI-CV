@@ -54,6 +54,7 @@ colormap([128 128 128; 0 0 0; 255 255 255]/255);
 % Load image 'NASA1.jpg' and convert image from rgb to grayscale 
 I = rgb2gray(imread('NASA1.bmp'));
 imshow(I)
+title('Training NASA Image');
 % Compute the Integral Image
 % >> code to compute the integral image S <<
 S = cumsum(cumsum(double(I),2));
@@ -139,7 +140,7 @@ scatter(FEAT_FACE(:,1),FEAT_FACE(:,2),'g');
 scatter(FEAT_NON_FACE(:,1),FEAT_NON_FACE(:,2),'r');
 xlabel('Feature 1');
 ylabel('Feature 2');
-title('Feature space');
+title('Training Feature Space');
 %% Visualize image with used regions
 figure(4);
 imshow(I);
@@ -173,6 +174,7 @@ end
 I = rgb2gray(imread('NASA2.bmp'));
 % Select regions with FACES and NON-FACES
 figure(), imshow(I);
+title('Testing NASA Image');
 [x1, y1] = ginput(20);
 
 % You could use ginput only once and then copy the coordinates
@@ -238,7 +240,6 @@ scatter(FEAT_NON_FACE(:,1),FEAT_NON_FACE(:,2),'r');
 xlabel('Feature 1');
 ylabel('Feature 2');
 title('Feature space');
-
 % Second, visualize the test samples in two different colors
 % >> code here <<
 figure();
@@ -247,16 +248,43 @@ scatter(TEST_FACE(:,1),TEST_FACE(:,2),'r');
 scatter(TEST_NON_FACE(:,1),TEST_NON_FACE(:,2),'g');
 xlabel('Feature 1');
 ylabel('Feature 2');
-title('Feature space');
+title('Testing Feature Space');
+%% %% Visualize actual test image labels
+figure(4);
+imshow(I);
+title('Actual Test Image Labels')
+
+faces = XY_TEST(1:11,:)
+non_faces = XY_TEST(11:20,:)
+
+% patches with faces
+for i = 1:size(faces,1)
+    PATCH = [faces(i,:) L L];
+    Rectangle = [PATCH(1) PATCH(2); PATCH(1)+PATCH(3) PATCH(2); PATCH(1)+PATCH(3) PATCH(2)+PATCH(4); PATCH(1)  PATCH(2)+PATCH(4); PATCH(1) PATCH(2)];
+    hold on;
+    plot (Rectangle(:,1), Rectangle(:,2), 'g');
+    hold off;
+end
+
+% patches without faces
+for i = 1:size(non_faces,1)
+    PATCH = [non_faces(i,:) L L];
+    Rectangle = [PATCH(1) PATCH(2); PATCH(1)+PATCH(3) PATCH(2); PATCH(1)+PATCH(3) PATCH(2)+PATCH(4); PATCH(1)  PATCH(2)+PATCH(4); PATCH(1) PATCH(2)];
+    hold on;
+    plot (Rectangle(:,1), Rectangle(:,2), 'r');
+    hold off;
+end
+
 
 %% Visualize classification results in the test image
 
 % Visualize image 'NASA2.bmp' with used regions
 figure(4);
 imshow(I);
+title('Predicted Test Image Labels')
 
-faces = XY_TEST(face_rows,:)
-non_faces = XY_TEST(non_face_rows,:)
+faces = XY_TEST(face_rows,:);
+non_faces = XY_TEST(non_face_rows,:);
 
 % patches with faces
 for i = 1:size(faces,1)

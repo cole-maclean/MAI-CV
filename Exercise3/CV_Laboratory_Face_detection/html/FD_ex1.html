@@ -66,7 +66,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#3">Initialization</a></li><li><a href="#4">Draw the 2 feature masks (just for visualization purpose)</a></li><li><a href="#5">Load image, compute Integral Image and visualize it</a></li><li><a href="#6">Compute features for regions with faces</a></li><li><a href="#7">Compute features for regions with non-faces</a></li><li><a href="#8">Visualize samples in the feature space</a></li><li><a href="#9">Visualize image with used regions</a></li><li><a href="#10">Part 2:</a></li><li><a href="#11">Define the new regions of the test image</a></li><li><a href="#12">Compute features for these new regions</a></li><li><a href="#13">Train a k-nn classifier and test the new windows</a></li><li><a href="#14">Visualize samples in the feature space</a></li><li><a href="#15">Visualize classification results in the test image</a></li></ul></div><pre class="codeinput"><span class="comment">% Computational Vision</span>
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#3">Initialization</a></li><li><a href="#4">Draw the 2 feature masks (just for visualization purpose)</a></li><li><a href="#5">Load image, compute Integral Image and visualize it</a></li><li><a href="#6">Compute features for regions with faces</a></li><li><a href="#7">Compute features for regions with non-faces</a></li><li><a href="#8">Visualize samples in the feature space</a></li><li><a href="#9">Visualize image with used regions</a></li><li><a href="#10">Part 2:</a></li><li><a href="#11">Define the new regions of the test image</a></li><li><a href="#12">Compute features for these new regions</a></li><li><a href="#13">Train a k-nn classifier and test the new windows</a></li><li><a href="#14">Visualize samples in the feature space</a></li><li><a href="#15">%% Visualize actual test image labels</a></li><li><a href="#16">Visualize classification results in the test image</a></li></ul></div><pre class="codeinput"><span class="comment">% Computational Vision</span>
 <span class="comment">% Student names: ...</span>
 <span class="comment">%</span>
 <span class="comment">% &gt;&gt; OBJECTIVE:</span>
@@ -110,6 +110,7 @@ colormap([128 128 128; 0 0 0; 255 255 255]/255);
 </pre><img vspace="5" hspace="5" src="FD_ex1_01.png" style="width:560px;height:420px;" alt=""> <img vspace="5" hspace="5" src="FD_ex1_02.png" style="width:560px;height:420px;" alt=""> <h2 id="5">Load image, compute Integral Image and visualize it</h2><pre class="codeinput"><span class="comment">% Load image 'NASA1.jpg' and convert image from rgb to grayscale</span>
 I = rgb2gray(imread(<span class="string">'NASA1.bmp'</span>));
 imshow(I)
+title(<span class="string">'Training NASA Image'</span>);
 <span class="comment">% Compute the Integral Image</span>
 <span class="comment">% &gt;&gt; code to compute the integral image S &lt;&lt;</span>
 S = cumsum(cumsum(double(I),2));
@@ -187,7 +188,7 @@ scatter(FEAT_FACE(:,1),FEAT_FACE(:,2),<span class="string">'g'</span>);
 scatter(FEAT_NON_FACE(:,1),FEAT_NON_FACE(:,2),<span class="string">'r'</span>);
 xlabel(<span class="string">'Feature 1'</span>);
 ylabel(<span class="string">'Feature 2'</span>);
-title(<span class="string">'Feature space'</span>);
+title(<span class="string">'Training Feature Space'</span>);
 </pre><img vspace="5" hspace="5" src="FD_ex1_04.png" style="width:560px;height:420px;" alt=""> <h2 id="9">Visualize image with used regions</h2><pre class="codeinput">figure(4);
 imshow(I);
 
@@ -213,6 +214,7 @@ imshow(I);
 I = rgb2gray(imread(<span class="string">'NASA2.bmp'</span>));
 <span class="comment">% Select regions with FACES and NON-FACES</span>
 figure(), imshow(I);
+title(<span class="string">'Testing NASA Image'</span>);
 [x1, y1] = ginput(20);
 
 <span class="comment">% You could use ginput only once and then copy the coordinates</span>
@@ -227,12 +229,7 @@ y1 = round(y1);
 XY_TEST = [x1 y1];
 TEST_FACE = XY_TEST(1:11,:);
 TEST_NON_FACE = XY_TEST(11:20,:);
-</pre><pre class="codeoutput error">Error using ginput (line 81)
-Interrupted by figure deletion
-
-Error in FD_ex1 (line 176)
-[x1, y1] = ginput(20);
-</pre><h2 id="12">Compute features for these new regions</h2><p>Compute the Integral Image &gt;&gt; code here &lt;&lt;</p><pre class="codeinput">S = cumsum(cumsum(double(I),2));
+</pre><img vspace="5" hspace="5" src="FD_ex1_06.png" style="width:725px;height:520px;" alt=""> <h2 id="12">Compute features for these new regions</h2><p>Compute the Integral Image &gt;&gt; code here &lt;&lt;</p><pre class="codeinput">S = cumsum(cumsum(double(I),2));
 <span class="comment">% Initialize the feature matrix for faces</span>
 FEAT_TEST = [];
 
@@ -268,6 +265,8 @@ Group = [repmat(1, length(FEAT_FACE), 1); repmat(2, length(FEAT_NON_FACE), 1)];
 class = knnclassify(FEAT_TEST,features_train, Group);
 face_rows = class == 1;
 non_face_rows = class == 2;
+</pre><pre class="codeoutput">Warning: KNNCLASSIFY will be removed in a future release. Use fitcknn to fit a
+KNN classification model and classify data using ClassificationKNN.predict. 
 </pre><h2 id="14">Visualize samples in the feature space</h2><p>First, visualize the training samples:</p><pre class="codeinput">figure();
 hold <span class="string">on</span>
 scatter(FEAT_FACE(:,1),FEAT_FACE(:,2),<span class="string">'g'</span>);
@@ -275,7 +274,6 @@ scatter(FEAT_NON_FACE(:,1),FEAT_NON_FACE(:,2),<span class="string">'r'</span>);
 xlabel(<span class="string">'Feature 1'</span>);
 ylabel(<span class="string">'Feature 2'</span>);
 title(<span class="string">'Feature space'</span>);
-
 <span class="comment">% Second, visualize the test samples in two different colors</span>
 <span class="comment">% &gt;&gt; code here &lt;&lt;</span>
 figure();
@@ -284,13 +282,13 @@ scatter(TEST_FACE(:,1),TEST_FACE(:,2),<span class="string">'r'</span>);
 scatter(TEST_NON_FACE(:,1),TEST_NON_FACE(:,2),<span class="string">'g'</span>);
 xlabel(<span class="string">'Feature 1'</span>);
 ylabel(<span class="string">'Feature 2'</span>);
-title(<span class="string">'Feature space'</span>);
-</pre><h2 id="15">Visualize classification results in the test image</h2><pre class="codeinput"><span class="comment">% Visualize image 'NASA2.bmp' with used regions</span>
-figure(4);
+title(<span class="string">'Testing Feature Space'</span>);
+</pre><img vspace="5" hspace="5" src="FD_ex1_07.png" style="width:560px;height:420px;" alt=""> <img vspace="5" hspace="5" src="FD_ex1_08.png" style="width:560px;height:420px;" alt=""> <h2 id="15">%% Visualize actual test image labels</h2><pre class="codeinput">figure(4);
 imshow(I);
+title(<span class="string">'Actual Test Image Labels'</span>)
 
-faces = XY_TEST(face_rows,:)
-non_faces = XY_TEST(non_face_rows,:)
+faces = XY_TEST(1:11,:)
+non_faces = XY_TEST(11:20,:)
 
 <span class="comment">% patches with faces</span>
 <span class="keyword">for</span> i = 1:size(faces,1)
@@ -309,7 +307,61 @@ non_faces = XY_TEST(non_face_rows,:)
     plot (Rectangle(:,1), Rectangle(:,2), <span class="string">'r'</span>);
     hold <span class="string">off</span>;
 <span class="keyword">end</span>
-</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><pre class="codeoutput">
+faces =
+
+         133         394
+         109         169
+         234         251
+         586         391
+         600         140
+         789         365
+        1081         229
+        1277         371
+        1269         198
+         895         141
+          27          68
+
+
+non_faces =
+
+          27          68
+         318          80
+        1309          40
+         144         938
+         544         805
+         827         939
+        1133         772
+         770         609
+         358         618
+         456         405
+
+</pre><img vspace="5" hspace="5" src="FD_ex1_09.png" style="width:725px;height:520px;" alt=""> <h2 id="16">Visualize classification results in the test image</h2><pre class="codeinput"><span class="comment">% Visualize image 'NASA2.bmp' with used regions</span>
+figure(4);
+imshow(I);
+title(<span class="string">'Predicted Test Image Labels'</span>)
+
+faces = XY_TEST(face_rows,:);
+non_faces = XY_TEST(non_face_rows,:);
+
+<span class="comment">% patches with faces</span>
+<span class="keyword">for</span> i = 1:size(faces,1)
+    PATCH = [faces(i,:) L L];
+    Rectangle = [PATCH(1) PATCH(2); PATCH(1)+PATCH(3) PATCH(2); PATCH(1)+PATCH(3) PATCH(2)+PATCH(4); PATCH(1)  PATCH(2)+PATCH(4); PATCH(1) PATCH(2)];
+    hold <span class="string">on</span>;
+    plot (Rectangle(:,1), Rectangle(:,2), <span class="string">'g'</span>);
+    hold <span class="string">off</span>;
+<span class="keyword">end</span>
+
+<span class="comment">% patches without faces</span>
+<span class="keyword">for</span> i = 1:size(non_faces,1)
+    PATCH = [non_faces(i,:) L L];
+    Rectangle = [PATCH(1) PATCH(2); PATCH(1)+PATCH(3) PATCH(2); PATCH(1)+PATCH(3) PATCH(2)+PATCH(4); PATCH(1)  PATCH(2)+PATCH(4); PATCH(1) PATCH(2)];
+    hold <span class="string">on</span>;
+    plot (Rectangle(:,1), Rectangle(:,2), <span class="string">'r'</span>);
+    hold <span class="string">off</span>;
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="FD_ex1_10.png" style="width:725px;height:520px;" alt=""> <pre class="codeinput"><span class="keyword">end</span>
 </pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2016b</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 % Computational Vision
@@ -368,6 +420,7 @@ colormap([128 128 128; 0 0 0; 255 255 255]/255);
 % Load image 'NASA1.jpg' and convert image from rgb to grayscale 
 I = rgb2gray(imread('NASA1.bmp'));
 imshow(I)
+title('Training NASA Image');
 % Compute the Integral Image
 % >> code to compute the integral image S <<
 S = cumsum(cumsum(double(I),2));
@@ -453,7 +506,7 @@ scatter(FEAT_FACE(:,1),FEAT_FACE(:,2),'g');
 scatter(FEAT_NON_FACE(:,1),FEAT_NON_FACE(:,2),'r');
 xlabel('Feature 1');
 ylabel('Feature 2');
-title('Feature space');
+title('Training Feature Space');
 %% Visualize image with used regions
 figure(4);
 imshow(I);
@@ -487,6 +540,7 @@ end
 I = rgb2gray(imread('NASA2.bmp'));
 % Select regions with FACES and NON-FACES
 figure(), imshow(I);
+title('Testing NASA Image');
 [x1, y1] = ginput(20);
 
 % You could use ginput only once and then copy the coordinates
@@ -552,7 +606,6 @@ scatter(FEAT_NON_FACE(:,1),FEAT_NON_FACE(:,2),'r');
 xlabel('Feature 1');
 ylabel('Feature 2');
 title('Feature space');
-
 % Second, visualize the test samples in two different colors
 % >> code here <<
 figure();
@@ -561,16 +614,43 @@ scatter(TEST_FACE(:,1),TEST_FACE(:,2),'r');
 scatter(TEST_NON_FACE(:,1),TEST_NON_FACE(:,2),'g');
 xlabel('Feature 1');
 ylabel('Feature 2');
-title('Feature space');
+title('Testing Feature Space');
+%% %% Visualize actual test image labels
+figure(4);
+imshow(I);
+title('Actual Test Image Labels')
+
+faces = XY_TEST(1:11,:)
+non_faces = XY_TEST(11:20,:)
+
+% patches with faces
+for i = 1:size(faces,1)
+    PATCH = [faces(i,:) L L];
+    Rectangle = [PATCH(1) PATCH(2); PATCH(1)+PATCH(3) PATCH(2); PATCH(1)+PATCH(3) PATCH(2)+PATCH(4); PATCH(1)  PATCH(2)+PATCH(4); PATCH(1) PATCH(2)];
+    hold on;
+    plot (Rectangle(:,1), Rectangle(:,2), 'g');
+    hold off;
+end
+
+% patches without faces
+for i = 1:size(non_faces,1)
+    PATCH = [non_faces(i,:) L L];
+    Rectangle = [PATCH(1) PATCH(2); PATCH(1)+PATCH(3) PATCH(2); PATCH(1)+PATCH(3) PATCH(2)+PATCH(4); PATCH(1)  PATCH(2)+PATCH(4); PATCH(1) PATCH(2)];
+    hold on;
+    plot (Rectangle(:,1), Rectangle(:,2), 'r');
+    hold off;
+end
+
 
 %% Visualize classification results in the test image
 
 % Visualize image 'NASA2.bmp' with used regions
 figure(4);
 imshow(I);
+title('Predicted Test Image Labels')
 
-faces = XY_TEST(face_rows,:)
-non_faces = XY_TEST(non_face_rows,:)
+faces = XY_TEST(face_rows,:);
+non_faces = XY_TEST(non_face_rows,:);
 
 % patches with faces
 for i = 1:size(faces,1)

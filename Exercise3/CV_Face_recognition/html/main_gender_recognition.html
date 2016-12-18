@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>main_gender_recognition</title><meta name="generator" content="MATLAB 9.1"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-11-10"><meta name="DC.source" content="main_gender_recognition.m"><style type="text/css">
+      --><title>main_gender_recognition</title><meta name="generator" content="MATLAB 9.1"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-11-13"><meta name="DC.source" content="main_gender_recognition.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -163,13 +163,13 @@ Rates_pca =
 
   struct with fields:
 
-               Sens: 81.8087
-               Spec: 84.0787
-               Prec: 81.5544
-                FAR: 18.5031
-             Recall: 81.8087
-                Acc: 83.0288
-              Error: 17.8841
+               Sens: 83.4402
+               Spec: 85.4021
+               Prec: 82.3840
+                FAR: 17.8419
+             Recall: 83.4402
+                Acc: 84.5192
+              Error: 16.7745
     ConfusionMatrix: [2&times;2 double]
 
 Warning: KNNCLASSIFY will be removed in a future release. Use fitcknn to fit a
@@ -197,13 +197,13 @@ Rates_pca95 =
 
   struct with fields:
 
-               Sens: 54.1667
-               Spec: 83.7413
-               Prec: 73.1602
-                FAR: 19.8718
-             Recall: 54.1667
-                Acc: 70.4327
-              Error: 18.8062
+               Sens: 54.3956
+               Spec: 83.8462
+               Prec: 72.3684
+                FAR: 20.7692
+             Recall: 54.3956
+                Acc: 70.9615
+              Error: 19.0995
     ConfusionMatrix: [2&times;2 double]
 
 Warning: KNNCLASSIFY will be removed in a future release. Use fitcknn to fit a
@@ -231,13 +231,13 @@ Rates_lda =
 
   struct with fields:
 
-               Sens: 99.6795
+               Sens: 99.7863
                Spec: 99.7378
-               Prec: 99.6795
+               Prec: 99.6798
                 FAR: 0.3205
-             Recall: 99.6795
-                Acc: 99.7115
-              Error: 0.3014
+             Recall: 99.7863
+                Acc: 99.7596
+              Error: 0.3010
     ConfusionMatrix: [2&times;2 double]
 
 </pre><pre class="codeinput"><span class="keyword">end</span>
@@ -316,7 +316,6 @@ Rates_pca95 = validation(mat_features_pca95', labels', subjects', F);
 display(Rates_pca95);
 Rates_lda = validation(mat_features_lda', labels', subjects', F);
 display(Rates_lda);
-
 
 end
 

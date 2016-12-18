@@ -65,7 +65,7 @@ for i = 1:NFolds
     TestSet=T_TestSet';
    
     % Train a k-nn classifier and test the test samples using knnclassify.m
-    k=2;
+    k=3;
     idx = knnclassify(TestSet', TrainSet', TrainLabels', k);
     Result_labels=idx';
         
