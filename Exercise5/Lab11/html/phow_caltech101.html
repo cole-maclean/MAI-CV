@@ -1,0 +1,726 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>phow_caltech101</title><meta name="generator" content="MATLAB 9.1"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-12-20"><meta name="DC.source" content="phow_caltech101.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><pre class="codeinput"><span class="keyword">function</span> phow_caltech101
+<span class="comment">% PHOW_CALTECH101 Image classification in the Caltech-101 dataset</span>
+<span class="comment">%   This program demonstrates how to use VLFeat to construct an image</span>
+<span class="comment">%   classifier on the Caltech-101 data. The classifier uses PHOW</span>
+<span class="comment">%   features (dense SIFT), spatial histograms of visual words, and a</span>
+<span class="comment">%   Chi2 SVM. To speedup computation it uses VLFeat fast dense SIFT,</span>
+<span class="comment">%   kd-trees, and homogeneous kernel map. The program also</span>
+<span class="comment">%   demonstrates VLFeat PEGASOS SVM solver, although for this small</span>
+<span class="comment">%   dataset other solvers such as LIBLINEAR can be more efficient.</span>
+<span class="comment">%</span>
+<span class="comment">%   By default 15 training images are used, which should result in</span>
+<span class="comment">%   about 64% performance (a good performance considering that only a</span>
+<span class="comment">%   single feature type is being used).</span>
+<span class="comment">%</span>
+<span class="comment">%   Call PHOW_CALTECH101 to train and test a classifier on a small</span>
+<span class="comment">%   subset of the Caltech-101 data. Note that the program</span>
+<span class="comment">%   automatically downloads a copy of the Caltech-101 data from the</span>
+<span class="comment">%   Internet if it cannot find a local copy.</span>
+<span class="comment">%</span>
+<span class="comment">%   Edit the PHOW_CALTECH101 file to change the program configuration.</span>
+<span class="comment">%</span>
+<span class="comment">%   To run on the entire dataset change CONF.TINYPROBLEM to FALSE.</span>
+<span class="comment">%</span>
+<span class="comment">%   The Caltech-101 data is saved into CONF.CALDIR, which defaults to</span>
+<span class="comment">%   'data/caltech-101'. Change this path to the desired location, for</span>
+<span class="comment">%   instance to point to an existing copy of the Caltech-101 data.</span>
+<span class="comment">%</span>
+<span class="comment">%   The program can also be used to train a model on custom data by</span>
+<span class="comment">%   pointing CONF.CALDIR to it. Just create a subdirectory for each</span>
+<span class="comment">%   class and put the training images there. Make sure to adjust</span>
+<span class="comment">%   CONF.NUMTRAIN accordingly.</span>
+<span class="comment">%</span>
+<span class="comment">%   Intermediate files are stored in the directory CONF.DATADIR. All</span>
+<span class="comment">%   such files begin with the prefix CONF.PREFIX, which can be changed</span>
+<span class="comment">%   to test different parameter settings without overriding previous</span>
+<span class="comment">%   results.</span>
+<span class="comment">%</span>
+<span class="comment">%   The program saves the trained model in</span>
+<span class="comment">%   &lt;CONF.DATADIR&gt;/&lt;CONF.PREFIX&gt;-model.mat. This model can be used to</span>
+<span class="comment">%   test novel images independently of the Caltech data.</span>
+<span class="comment">%</span>
+<span class="comment">%     load('data/baseline-model.mat') ; # change to the model path</span>
+<span class="comment">%     label = model.classify(model, im) ;</span>
+<span class="comment">%</span>
+
+<span class="comment">% AUTORIGHTS</span>
+
+conf.calDir = <span class="string">'data/caltech-101'</span> ;
+conf.dataDir = <span class="string">'data/'</span> ;
+conf.autoDownloadData = true ;
+conf.numTrain = 15 ;
+conf.numTest = 15 ;
+conf.numClasses = 102 ;
+conf.numWords = 600 ;
+conf.numSpatialX = [2 4] ;
+conf.numSpatialY = [2 4] ;
+conf.quantizer = <span class="string">'kdtree'</span> ;
+conf.svm.C = 10 ;
+conf.svm.solver = <span class="string">'pegasos'</span> ;
+conf.svm.biasMultiplier = 1 ;
+conf.phowOpts = {<span class="string">'Step'</span>, 3} ;
+conf.clobber = false ;
+conf.tinyProblem = true ;
+conf.prefix = <span class="string">'baseline'</span> ;
+conf.randSeed = 1 ;
+conf.vizCount = 5 ;
+
+<span class="keyword">if</span> conf.tinyProblem
+  conf.prefix = <span class="string">'tiny'</span> ;
+  conf.numClasses = 5 ;
+  conf.numSpatialX = 2 ;
+  conf.numSpatialY = 2 ;
+  conf.numWords = 300 ;
+  conf.phowOpts = {<span class="string">'Verbose'</span>, 2, <span class="string">'Sizes'</span>, 7, <span class="string">'Step'</span>, 5} ;
+<span class="keyword">end</span>
+
+conf.vocabPath = fullfile(conf.dataDir, [conf.prefix <span class="string">'-vocab.mat'</span>]) ;
+conf.histPath = fullfile(conf.dataDir, [conf.prefix <span class="string">'-hists.mat'</span>]) ;
+conf.modelPath = fullfile(conf.dataDir, [conf.prefix <span class="string">'-model.mat'</span>]) ;
+conf.resultPath = fullfile(conf.dataDir, [conf.prefix <span class="string">'-result'</span>]) ;
+
+randn(<span class="string">'state'</span>,conf.randSeed) ;
+rand(<span class="string">'state'</span>,conf.randSeed) ;
+vl_twister(<span class="string">'state'</span>,conf.randSeed) ;
+
+<span class="comment">% --------------------------------------------------------------------</span>
+<span class="comment">%                                            Download Caltech-101 data</span>
+<span class="comment">% --------------------------------------------------------------------</span>
+
+<span class="keyword">if</span> ~exist(conf.calDir, <span class="string">'dir'</span>) || <span class="keyword">...</span>
+   (~exist(fullfile(conf.calDir, <span class="string">'airplanes'</span>),<span class="string">'dir'</span>) &amp;&amp; <span class="keyword">...</span>
+    ~exist(fullfile(conf.calDir, <span class="string">'101_ObjectCategories'</span>, <span class="string">'airplanes'</span>)))
+  <span class="keyword">if</span> ~conf.autoDownloadData
+    error(<span class="keyword">...</span>
+      [<span class="string">'Caltech-101 data not found. '</span> <span class="keyword">...</span>
+       <span class="string">'Set conf.autoDownloadData=true to download the required data.'</span>]) ;
+  <span class="keyword">end</span>
+  vl_xmkdir(conf.calDir) ;
+  calUrl = [<span class="string">'http://www.vision.caltech.edu/Image_Datasets/'</span> <span class="keyword">...</span>
+    <span class="string">'Caltech101/101_ObjectCategories.tar.gz'</span>] ;
+  fprintf(<span class="string">'Downloading Caltech-101 data to ''%s''. This will take a while.'</span>, conf.calDir) ;
+  untar(calUrl, conf.calDir) ;
+<span class="keyword">end</span>
+
+<span class="keyword">if</span> ~exist(fullfile(conf.calDir, <span class="string">'airplanes'</span>),<span class="string">'dir'</span>)
+  conf.calDir = fullfile(conf.calDir, <span class="string">'101_ObjectCategories'</span>) ;
+<span class="keyword">end</span>
+
+<span class="comment">% --------------------------------------------------------------------</span>
+<span class="comment">%                                                           Setup data</span>
+<span class="comment">% --------------------------------------------------------------------</span>
+classes = dir(conf.calDir) ;
+classes = classes([classes.isdir]) ;
+classes = {classes(3:conf.numClasses+2).name} ;
+
+images = {} ;
+imageClass = {} ;
+<span class="keyword">for</span> ci = 1:length(classes)
+  ims = dir(fullfile(conf.calDir, classes{ci}, <span class="string">'*.jpg'</span>))' ;
+  ims = vl_colsubset(ims, conf.numTrain + conf.numTest) ;
+  ims = cellfun(@(x)fullfile(classes{ci},x),{ims.name},<span class="string">'UniformOutput'</span>,false) ;
+  images = {images{:}, ims{:}} ;
+  imageClass{end+1} = ci * ones(1,length(ims)) ;
+<span class="keyword">end</span>
+selTrain = find(mod(0:length(images)-1, conf.numTrain+conf.numTest) &lt; conf.numTrain) ;
+selTest = setdiff(1:length(images), selTrain) ;
+imageClass = cat(2, imageClass{:}) ;
+
+model.classes = classes ;
+model.phowOpts = conf.phowOpts ;
+model.numSpatialX = conf.numSpatialX ;
+model.numSpatialY = conf.numSpatialY ;
+model.quantizer = conf.quantizer ;
+model.vocab = [] ;
+model.w = [] ;
+model.b = [] ;
+model.classify = @classify ;
+
+<span class="comment">% --------------------------------------------------------------------</span>
+<span class="comment">%                                                     Train vocabulary</span>
+<span class="comment">% --------------------------------------------------------------------</span>
+
+<span class="keyword">if</span> ~exist(conf.vocabPath) || conf.clobber
+
+  <span class="comment">% Get some PHOW descriptors to train the dictionary</span>
+  selTrainFeats = vl_colsubset(selTrain, 30) ;
+  descrs = {} ;
+  <span class="comment">%for ii = 1:length(selTrainFeats)</span>
+  <span class="keyword">parfor</span> ii = 1:length(selTrainFeats)
+    im = imread(fullfile(conf.calDir, images{selTrainFeats(ii)})) ;
+    im = standarizeImage(im) ;
+    [drop, descrs{ii}] = vl_phow(im, model.phowOpts{:}) ;
+  <span class="keyword">end</span>
+
+  descrs = vl_colsubset(cat(2, descrs{:}), 10e4) ;
+  descrs = single(descrs) ;
+
+  <span class="comment">% Quantize the descriptors to get the visual words</span>
+  vocab = vl_kmeans(descrs, conf.numWords, <span class="string">'verbose'</span>, <span class="string">'algorithm'</span>, <span class="string">'elkan'</span>) ;
+  save(conf.vocabPath, <span class="string">'vocab'</span>) ;
+<span class="keyword">else</span>
+  load(conf.vocabPath) ;
+<span class="keyword">end</span>
+
+model.vocab = vocab ;
+
+<span class="keyword">if</span> strcmp(model.quantizer, <span class="string">'kdtree'</span>)
+  model.kdtree = vl_kdtreebuild(vocab) ;
+<span class="keyword">end</span>
+
+<span class="comment">% --------------------------------------------------------------------</span>
+<span class="comment">%                                           Compute spatial histograms</span>
+<span class="comment">% --------------------------------------------------------------------</span>
+
+<span class="keyword">if</span> ~exist(conf.histPath) || conf.clobber
+  hists = {} ;
+  <span class="keyword">parfor</span> ii = 1:length(images)
+  <span class="comment">% for ii = 1:length(images)</span>
+    fprintf(<span class="string">'Processing %s (%.2f %%)\n'</span>, images{ii}, 100 * ii / length(images)) ;
+    im = imread(fullfile(conf.calDir, images{ii})) ;
+    hists{ii} = getImageDescriptor(model, im);
+  <span class="keyword">end</span>
+
+  hists = cat(2, hists{:}) ;
+  save(conf.histPath, <span class="string">'hists'</span>) ;
+<span class="keyword">else</span>
+  load(conf.histPath) ;
+<span class="keyword">end</span>
+
+<span class="comment">% --------------------------------------------------------------------</span>
+<span class="comment">%                                                  Compute feature map</span>
+<span class="comment">% --------------------------------------------------------------------</span>
+
+psix = vl_homkermap(hists, 1, <span class="string">'kchi2'</span>, <span class="string">'gamma'</span>, .5) ;
+
+<span class="comment">% --------------------------------------------------------------------</span>
+<span class="comment">%                                                            Train SVM</span>
+<span class="comment">% --------------------------------------------------------------------</span>
+
+<span class="keyword">if</span> ~exist(conf.modelPath) || conf.clobber
+  <span class="keyword">switch</span> conf.svm.solver
+    <span class="keyword">case</span> <span class="string">'pegasos'</span>
+      lambda = 1 / (conf.svm.C *  length(selTrain)) ;
+      w = [] ;
+      <span class="comment">% for ci = 1:length(classes)</span>
+      <span class="keyword">parfor</span> ci = 1:length(classes)
+        perm = randperm(length(selTrain)) ;
+        fprintf(<span class="string">'Training model for class %s\n'</span>, classes{ci}) ;
+        y = 2 * (imageClass(selTrain) == ci) - 1 ;
+        w(:,ci) = vl_pegasos(psix(:,selTrain(perm)), <span class="keyword">...</span>
+                             int8(y(perm)), lambda, <span class="keyword">...</span>
+                             <span class="string">'NumIterations'</span>, 50/lambda, <span class="keyword">...</span>
+                             <span class="string">'BiasMultiplier'</span>, conf.svm.biasMultiplier) ;
+      <span class="keyword">end</span>
+    <span class="keyword">case</span> <span class="string">'liblinear'</span>
+      svm = train(imageClass(selTrain)', <span class="keyword">...</span>
+                  sparse(double(psix(:,selTrain))),  <span class="keyword">...</span>
+                  sprintf(<span class="string">' -s 3 -B %f -c %f'</span>, <span class="keyword">...</span>
+                          conf.svm.biasMultiplier, conf.svm.C), <span class="keyword">...</span>
+                  <span class="string">'col'</span>) ;
+      w = svm.w' ;
+  <span class="keyword">end</span>
+
+  model.b = conf.svm.biasMultiplier * w(end, :) ;
+  model.w = w(1:end-1, :) ;
+
+  save(conf.modelPath, <span class="string">'model'</span>) ;
+<span class="keyword">else</span>
+  load(conf.modelPath) ;
+<span class="keyword">end</span>
+
+<span class="comment">% --------------------------------------------------------------------</span>
+<span class="comment">%                                                Test SVM and evaluate</span>
+<span class="comment">% --------------------------------------------------------------------</span>
+
+<span class="comment">% Estimate the class of the test images</span>
+scores = model.w' * psix + model.b' * ones(1,size(psix,2)) ;
+[drop, imageEstClass] = max(scores, [], 1) ;
+
+<span class="comment">% Compute the confusion matrix</span>
+idx = sub2ind([length(classes), length(classes)], <span class="keyword">...</span>
+              imageClass(selTest), imageEstClass(selTest)) ;
+<span class="keyword">if</span> conf.vizCount &gt; 0
+    figure()
+    i = 1;
+    <span class="keyword">for</span> viz_img = selTest(1:conf.vizCount)
+        img = imread(fullfile(conf.calDir, images{viz_img}));
+        img_size = size(img);
+        <span class="keyword">if</span> imageClass(viz_img) == imageEstClass(viz_img)
+            brd_color = <span class="string">'g'</span>;
+        <span class="keyword">else</span>
+            brd_color = <span class="string">'r'</span>;
+        <span class="keyword">end</span>
+        subplot(1,conf.vizCount,i)
+        imshow(img)
+        rectangle(<span class="string">'position'</span>,[1 1 img_size(2)-5 img_size(1)-5],<span class="string">'edgecolor'</span>,brd_color,<span class="string">'LineWidth'</span>,4)
+        i = i + 1;
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+confus = zeros(length(classes)) ;
+confus = vl_binsum(confus, ones(size(idx)), idx) ;
+
+<span class="comment">% Plots</span>
+figure(1) ; clf;
+subplot(1,2,1) ;
+imagesc(scores(:,[selTrain selTest])) ; title(<span class="string">'Scores'</span>) ;
+set(gca, <span class="string">'ytick'</span>, 1:length(classes), <span class="string">'yticklabel'</span>, classes) ;
+subplot(1,2,2) ;
+imagesc(confus) ;
+title(sprintf(<span class="string">'Confusion matrix (%.2f %% accuracy)'</span>, <span class="keyword">...</span>
+              100 * mean(diag(confus)/conf.numTest) )) ;
+print(<span class="string">'-depsc2'</span>, [conf.resultPath <span class="string">'.ps'</span>]) ;
+save([conf.resultPath <span class="string">'.mat'</span>], <span class="string">'confus'</span>, <span class="string">'conf'</span>) ;
+
+<span class="comment">% -------------------------------------------------------------------------</span>
+<span class="keyword">function</span> im = standarizeImage(im)
+<span class="comment">% -------------------------------------------------------------------------</span>
+
+im = im2single(im) ;
+<span class="keyword">if</span> size(im,1) &gt; 480, im = imresize(im, [480 NaN]) ; <span class="keyword">end</span>
+
+<span class="comment">% -------------------------------------------------------------------------</span>
+<span class="keyword">function</span> hist = getImageDescriptor(model, im)
+<span class="comment">% -------------------------------------------------------------------------</span>
+
+im = standarizeImage(im) ;
+width = size(im,2) ;
+height = size(im,1) ;
+numWords = size(model.vocab, 2) ;
+
+<span class="comment">% get PHOW features</span>
+[frames, descrs] = vl_phow(im, model.phowOpts{:}) ;
+
+<span class="comment">% quantize appearance</span>
+<span class="keyword">switch</span> model.quantizer
+  <span class="keyword">case</span> <span class="string">'vq'</span>
+    [drop, binsa] = min(vl_alldist(model.vocab, single(descrs)), [], 1) ;
+  <span class="keyword">case</span> <span class="string">'kdtree'</span>
+    binsa = double(vl_kdtreequery(model.kdtree, model.vocab, <span class="keyword">...</span>
+                                  single(descrs), <span class="keyword">...</span>
+                                  <span class="string">'MaxComparisons'</span>, 15)) ;
+<span class="keyword">end</span>
+
+<span class="keyword">for</span> i = 1:length(model.numSpatialX)
+  binsx = vl_binsearch(linspace(1,width,model.numSpatialX(i)+1), frames(1,:)) ;
+  binsy = vl_binsearch(linspace(1,height,model.numSpatialY(i)+1), frames(2,:)) ;
+
+  <span class="comment">% combined quantization</span>
+  bins = sub2ind([model.numSpatialY(i), model.numSpatialX(i), numWords], <span class="keyword">...</span>
+                 binsy,binsx,binsa) ;
+  hist = zeros(model.numSpatialY(i) * model.numSpatialX(i) * numWords, 1) ;
+  hist = vl_binsum(hist, ones(size(bins)), bins) ;
+  hists{i} = single(hist / sum(hist)) ;
+<span class="keyword">end</span>
+hist = cat(1,hists{:}) ;
+hist = hist / sum(hist) ;
+
+<span class="comment">% -------------------------------------------------------------------------</span>
+<span class="keyword">function</span> [className, score] = classify(model, im)
+<span class="comment">% -------------------------------------------------------------------------</span>
+
+hist = getImageDescriptor(model, im) ;
+psix = vl_homkermap(hist, 1, .7, <span class="string">'kchi2'</span>) ;
+scores = model.w' * psix + model.b' ;
+[score, best] = max(scores) ;
+className = model.classes{best} ;
+</pre><img vspace="5" hspace="5" src="phow_caltech101_01.png" style="width:560px;height:420px;" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2016b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+function phow_caltech101
+% PHOW_CALTECH101 Image classification in the Caltech-101 dataset
+%   This program demonstrates how to use VLFeat to construct an image
+%   classifier on the Caltech-101 data. The classifier uses PHOW
+%   features (dense SIFT), spatial histograms of visual words, and a
+%   Chi2 SVM. To speedup computation it uses VLFeat fast dense SIFT,
+%   kd-trees, and homogeneous kernel map. The program also
+%   demonstrates VLFeat PEGASOS SVM solver, although for this small
+%   dataset other solvers such as LIBLINEAR can be more efficient.
+%
+%   By default 15 training images are used, which should result in
+%   about 64% performance (a good performance considering that only a
+%   single feature type is being used).
+%
+%   Call PHOW_CALTECH101 to train and test a classifier on a small
+%   subset of the Caltech-101 data. Note that the program
+%   automatically downloads a copy of the Caltech-101 data from the
+%   Internet if it cannot find a local copy.
+%
+%   Edit the PHOW_CALTECH101 file to change the program configuration.
+%
+%   To run on the entire dataset change CONF.TINYPROBLEM to FALSE.
+%
+%   The Caltech-101 data is saved into CONF.CALDIR, which defaults to
+%   'data/caltech-101'. Change this path to the desired location, for
+%   instance to point to an existing copy of the Caltech-101 data.
+%
+%   The program can also be used to train a model on custom data by
+%   pointing CONF.CALDIR to it. Just create a subdirectory for each
+%   class and put the training images there. Make sure to adjust
+%   CONF.NUMTRAIN accordingly.
+%
+%   Intermediate files are stored in the directory CONF.DATADIR. All
+%   such files begin with the prefix CONF.PREFIX, which can be changed
+%   to test different parameter settings without overriding previous
+%   results.
+%
+%   The program saves the trained model in
+%   <CONF.DATADIR>/<CONF.PREFIX>-model.mat. This model can be used to
+%   test novel images independently of the Caltech data.
+%
+%     load('data/baseline-model.mat') ; # change to the model path
+%     label = model.classify(model, im) ;
+%
+
+% AUTORIGHTS
+
+conf.calDir = 'data/caltech-101' ;
+conf.dataDir = 'data/' ;
+conf.autoDownloadData = true ;
+conf.numTrain = 15 ;
+conf.numTest = 15 ;
+conf.numClasses = 102 ;
+conf.numWords = 600 ;
+conf.numSpatialX = [2 4] ;
+conf.numSpatialY = [2 4] ;
+conf.quantizer = 'kdtree' ;
+conf.svm.C = 10 ;
+conf.svm.solver = 'pegasos' ;
+conf.svm.biasMultiplier = 1 ;
+conf.phowOpts = {'Step', 3} ;
+conf.clobber = false ;
+conf.tinyProblem = true ;
+conf.prefix = 'baseline' ;
+conf.randSeed = 1 ;
+conf.vizCount = 5 ;
+
+if conf.tinyProblem
+  conf.prefix = 'tiny' ;
+  conf.numClasses = 5 ;
+  conf.numSpatialX = 2 ;
+  conf.numSpatialY = 2 ;
+  conf.numWords = 300 ;
+  conf.phowOpts = {'Verbose', 2, 'Sizes', 7, 'Step', 5} ;
+end
+
+conf.vocabPath = fullfile(conf.dataDir, [conf.prefix '-vocab.mat']) ;
+conf.histPath = fullfile(conf.dataDir, [conf.prefix '-hists.mat']) ;
+conf.modelPath = fullfile(conf.dataDir, [conf.prefix '-model.mat']) ;
+conf.resultPath = fullfile(conf.dataDir, [conf.prefix '-result']) ;
+
+randn('state',conf.randSeed) ;
+rand('state',conf.randSeed) ;
+vl_twister('state',conf.randSeed) ;
+
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+%                                            Download Caltech-101 data
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+
+if ~exist(conf.calDir, 'dir') || ...
+   (~exist(fullfile(conf.calDir, 'airplanes'),'dir') && ...
+    ~exist(fullfile(conf.calDir, '101_ObjectCategories', 'airplanes')))
+  if ~conf.autoDownloadData
+    error(...
+      ['Caltech-101 data not found. ' ...
+       'Set conf.autoDownloadData=true to download the required data.']) ;
+  end
+  vl_xmkdir(conf.calDir) ;
+  calUrl = ['http://www.vision.caltech.edu/Image_Datasets/' ...
+    'Caltech101/101_ObjectCategories.tar.gz'] ;
+  fprintf('Downloading Caltech-101 data to ''%s''. This will take a while.', conf.calDir) ;
+  untar(calUrl, conf.calDir) ;
+end
+
+if ~exist(fullfile(conf.calDir, 'airplanes'),'dir')
+  conf.calDir = fullfile(conf.calDir, '101_ObjectCategories') ;
+end
+
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+%                                                           Setup data
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+classes = dir(conf.calDir) ;
+classes = classes([classes.isdir]) ;
+classes = {classes(3:conf.numClasses+2).name} ;
+
+images = {} ;
+imageClass = {} ;
+for ci = 1:length(classes)
+  ims = dir(fullfile(conf.calDir, classes{ci}, '*.jpg'))' ;
+  ims = vl_colsubset(ims, conf.numTrain + conf.numTest) ;
+  ims = cellfun(@(x)fullfile(classes{ci},x),{ims.name},'UniformOutput',false) ;
+  images = {images{:}, ims{:}} ;
+  imageClass{end+1} = ci * ones(1,length(ims)) ;
+end
+selTrain = find(mod(0:length(images)-1, conf.numTrain+conf.numTest) < conf.numTrain) ;
+selTest = setdiff(1:length(images), selTrain) ;
+imageClass = cat(2, imageClass{:}) ;
+
+model.classes = classes ;
+model.phowOpts = conf.phowOpts ;
+model.numSpatialX = conf.numSpatialX ;
+model.numSpatialY = conf.numSpatialY ;
+model.quantizer = conf.quantizer ;
+model.vocab = [] ;
+model.w = [] ;
+model.b = [] ;
+model.classify = @classify ;
+
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+%                                                     Train vocabulary
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+
+if ~exist(conf.vocabPath) || conf.clobber
+
+  % Get some PHOW descriptors to train the dictionary
+  selTrainFeats = vl_colsubset(selTrain, 30) ;
+  descrs = {} ;
+  %for ii = 1:length(selTrainFeats)
+  parfor ii = 1:length(selTrainFeats)
+    im = imread(fullfile(conf.calDir, images{selTrainFeats(ii)})) ;
+    im = standarizeImage(im) ;
+    [drop, descrs{ii}] = vl_phow(im, model.phowOpts{:}) ;
+  end
+
+  descrs = vl_colsubset(cat(2, descrs{:}), 10e4) ;
+  descrs = single(descrs) ;
+
+  % Quantize the descriptors to get the visual words
+  vocab = vl_kmeans(descrs, conf.numWords, 'verbose', 'algorithm', 'elkan') ;
+  save(conf.vocabPath, 'vocab') ;
+else
+  load(conf.vocabPath) ;
+end
+
+model.vocab = vocab ;
+
+if strcmp(model.quantizer, 'kdtree')
+  model.kdtree = vl_kdtreebuild(vocab) ;
+end
+
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+%                                           Compute spatial histograms
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+
+if ~exist(conf.histPath) || conf.clobber
+  hists = {} ;
+  parfor ii = 1:length(images)
+  % for ii = 1:length(images)
+    fprintf('Processing %s (%.2f %%)\n', images{ii}, 100 * ii / length(images)) ;
+    im = imread(fullfile(conf.calDir, images{ii})) ;
+    hists{ii} = getImageDescriptor(model, im);
+  end
+
+  hists = cat(2, hists{:}) ;
+  save(conf.histPath, 'hists') ;
+else
+  load(conf.histPath) ;
+end
+
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+%                                                  Compute feature map
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+
+psix = vl_homkermap(hists, 1, 'kchi2', 'gamma', .5) ;
+
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+%                                                            Train SVM
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+
+if ~exist(conf.modelPath) || conf.clobber
+  switch conf.svm.solver
+    case 'pegasos'
+      lambda = 1 / (conf.svm.C *  length(selTrain)) ;
+      w = [] ;
+      % for ci = 1:length(classes)
+      parfor ci = 1:length(classes)
+        perm = randperm(length(selTrain)) ;
+        fprintf('Training model for class %s\n', classes{ci}) ;
+        y = 2 * (imageClass(selTrain) == ci) - 1 ;
+        w(:,ci) = vl_pegasos(psix(:,selTrain(perm)), ...
+                             int8(y(perm)), lambda, ...
+                             'NumIterations', 50/lambda, ...
+                             'BiasMultiplier', conf.svm.biasMultiplier) ;
+      end
+    case 'liblinear'
+      svm = train(imageClass(selTrain)', ...
+                  sparse(double(psix(:,selTrain))),  ...
+                  sprintf(' -s 3 -B %f -c %f', ...
+                          conf.svm.biasMultiplier, conf.svm.C), ...
+                  'col') ;
+      w = svm.w' ;
+  end
+
+  model.b = conf.svm.biasMultiplier * w(end, :) ;
+  model.w = w(1:end-1, :) ;
+
+  save(conf.modelPath, 'model') ;
+else
+  load(conf.modelPath) ;
+end
+
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+%                                                Test SVM and evaluate
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+
+% Estimate the class of the test images
+scores = model.w' * psix + model.b' * ones(1,size(psix,2)) ;
+[drop, imageEstClass] = max(scores, [], 1) ;
+
+% Compute the confusion matrix
+idx = sub2ind([length(classes), length(classes)], ...
+              imageClass(selTest), imageEstClass(selTest)) ;
+if conf.vizCount > 0
+    figure()
+    i = 1;
+    for viz_img = selTest(1:conf.vizCount)
+        img = imread(fullfile(conf.calDir, images{viz_img}));
+        img_size = size(img);
+        if imageClass(viz_img) == imageEstClass(viz_img)
+            brd_color = 'g';
+        else
+            brd_color = 'r';
+        end
+        subplot(1,conf.vizCount,i)
+        imshow(img)
+        rectangle('position',[1 1 img_size(2)-5 img_size(1)-5],'edgecolor',brd_color,'LineWidth',4)
+        i = i + 1;
+    end
+end
+        
+confus = zeros(length(classes)) ;
+confus = vl_binsum(confus, ones(size(idx)), idx) ;
+
+% Plots
+figure(1) ; clf;
+subplot(1,2,1) ;
+imagesc(scores(:,[selTrain selTest])) ; title('Scores') ;
+set(gca, 'ytick', 1:length(classes), 'yticklabel', classes) ;
+subplot(1,2,2) ;
+imagesc(confus) ;
+title(sprintf('Confusion matrix (%.2f %% accuracy)', ...
+              100 * mean(diag(confus)/conf.numTest) )) ;
+print('-depsc2', [conf.resultPath '.ps']) ;
+save([conf.resultPath '.mat'], 'confus', 'conf') ;
+
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+function im = standarizeImage(im)
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+
+im = im2single(im) ;
+if size(im,1) > 480, im = imresize(im, [480 NaN]) ; end
+
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+function hist = getImageDescriptor(model, im)
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+
+im = standarizeImage(im) ;
+width = size(im,2) ;
+height = size(im,1) ;
+numWords = size(model.vocab, 2) ;
+
+% get PHOW features
+[frames, descrs] = vl_phow(im, model.phowOpts{:}) ;
+
+% quantize appearance
+switch model.quantizer
+  case 'vq'
+    [drop, binsa] = min(vl_alldist(model.vocab, single(descrs)), [], 1) ;
+  case 'kdtree'
+    binsa = double(vl_kdtreequery(model.kdtree, model.vocab, ...
+                                  single(descrs), ...
+                                  'MaxComparisons', 15)) ;
+end
+
+for i = 1:length(model.numSpatialX)
+  binsx = vl_binsearch(linspace(1,width,model.numSpatialX(i)+1), frames(1,:)) ;
+  binsy = vl_binsearch(linspace(1,height,model.numSpatialY(i)+1), frames(2,:)) ;
+
+  % combined quantization
+  bins = sub2ind([model.numSpatialY(i), model.numSpatialX(i), numWords], ...
+                 binsy,binsx,binsa) ;
+  hist = zeros(model.numSpatialY(i) * model.numSpatialX(i) * numWords, 1) ;
+  hist = vl_binsum(hist, ones(size(bins)), bins) ;
+  hists{i} = single(hist / sum(hist)) ;
+end
+hist = cat(1,hists{:}) ;
+hist = hist / sum(hist) ;
+
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+function [className, score] = classify(model, im)
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+
+hist = getImageDescriptor(model, im) ;
+psix = vl_homkermap(hist, 1, .7, 'kchi2') ;
+scores = model.w' * psix + model.b' ;
+[score, best] = max(scores) ;
+className = model.classes{best} ;
+##### SOURCE END #####
+--></body></html>
