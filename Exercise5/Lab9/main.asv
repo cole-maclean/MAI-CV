@@ -39,9 +39,5 @@ sunset_feats = load_feats.classFeatures;
 mean_bld = mean(building_feats)
 mean_forest = mean(forest_feats)
 mean_sunset = mean(sunset_feats)
-plot(mean_bld,'b')
-hold on
-plot(mean_forest,'g')
-hold on
-plot(mean_sunset,'r')
+
 

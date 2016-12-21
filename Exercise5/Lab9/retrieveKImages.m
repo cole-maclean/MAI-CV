@@ -1,5 +1,5 @@
-function [IDX,D] = retrieveKImages(img,k)
-    img_features = getFeatures(img);
+function [IDX,D] = retrieveKImages(img,k,add_rgb)
+    img_features = getFeatures(img,add_rgb);
     load_feats = load('buildings.mat');
     building_feats = load_feats.classFeatures;
     load_feats = load('forest.mat');
